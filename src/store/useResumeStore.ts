@@ -9,7 +9,7 @@ import type {
 // ── Default meta ──
 
 const DEFAULT_META: ResumeMeta = {
-  templateId: 'academic',
+  templateId: 'meridian',
   palette: 'deep-navy',
   fontPairing: 'editorial-classic',
   layoutDensity: 'balanced',
@@ -78,7 +78,7 @@ const initialState: ResumeState = {
   parseError: null,
   activeSection: 'basics',
   previewMode: 'desktop',
-  templateId: 'academic',
+  templateId: 'meridian',
   meta: DEFAULT_META,
   detectedField: null,
 };

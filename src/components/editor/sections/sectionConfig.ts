@@ -30,10 +30,12 @@ export const SECTION_FIELDS: Record<string, FieldDef[]> = {
     { key: 'summary', label: 'Abstract / Summary', type: 'textarea' },
   ],
   presentations: [
-    { key: 'title', label: 'Title', required: true },
-    { key: 'event', label: 'Conference / Event' },
+    { key: 'name', label: 'Title', required: true },
+    { key: 'conference', label: 'Conference / Event' },
     { key: 'date', label: 'Date', type: 'date' },
+    { key: 'location', label: 'Location', placeholder: 'City, State' },
     { key: 'type', label: 'Type', placeholder: 'poster, podium, talk, workshop' },
+    { key: 'summary', label: 'Summary', type: 'textarea' },
     { key: 'url', label: 'URL', type: 'url' },
   ],
   projects: [
@@ -76,11 +78,14 @@ export const SECTION_FIELDS: Record<string, FieldDef[]> = {
   ],
   researchThreads: [
     { key: 'name', label: 'Research Theme', required: true },
-    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'summary', label: 'Summary', type: 'textarea' },
+    { key: 'keywords', label: 'Keywords', placeholder: 'oncology, genomics, machine learning' },
+    { key: 'publications', label: 'Publications', placeholder: 'Paper A; Paper B' },
+    { key: 'presentations', label: 'Presentations', placeholder: 'Talk A; Poster B' },
   ],
   leadership: [
     { key: 'organization', label: 'Organization', required: true },
-    { key: 'position', label: 'Position' },
+    { key: 'role', label: 'Role' },
     { key: 'startDate', label: 'Start Date', type: 'date' },
     { key: 'endDate', label: 'End Date', type: 'date' },
     { key: 'summary', label: 'Summary', type: 'textarea' },
@@ -92,16 +97,16 @@ export const SECTION_BLANKS: Record<string, () => Record<string, unknown>> = {
   work: () => ({ name: '', position: '', highlights: [] }),
   education: () => ({ institution: '', area: '', studyType: '' }),
   publications: () => ({ name: '', publisher: '' }),
-  presentations: () => ({ title: '', event: '', type: 'poster' }),
-  projects: () => ({ name: '', description: '', technologies: [] }),
+  presentations: () => ({ name: '', conference: '', type: 'poster' }),
+  projects: () => ({ name: '', description: '', tech: [] }),
   volunteer: () => ({ organization: '', position: '' }),
   awards: () => ({ title: '', awarder: '' }),
   certifications: () => ({ name: '', issuer: '' }),
   languages: () => ({ language: '', fluency: '' }),
   interests: () => ({ name: '' }),
   references: () => ({ name: '', reference: '' }),
-  researchThreads: () => ({ name: '', description: '', publicationIndices: [], presentationIndices: [] }),
-  leadership: () => ({ organization: '', position: '' }),
+  researchThreads: () => ({ name: '', summary: '', keywords: [], publications: [], presentations: [] }),
+  leadership: () => ({ organization: '', role: '' }),
 }
 
 // Card title extractors
@@ -109,7 +114,7 @@ export const SECTION_TITLES: Record<string, (item: Record<string, unknown>) => s
   work: (item) => `${item.position || 'Position'} at ${item.name || 'Company'}`,
   education: (item) => `${item.studyType || ''} ${item.area || ''} — ${item.institution || 'Institution'}`.trim(),
   publications: (item) => item.name as string,
-  presentations: (item) => `${item.title || 'Presentation'} — ${item.event || ''}`.trim(),
+  presentations: (item) => `${item.name || 'Presentation'} — ${item.conference || ''}`.trim(),
   projects: (item) => item.name as string,
   volunteer: (item) => `${item.position || 'Role'} at ${item.organization || 'Organization'}`,
   awards: (item) => item.title as string,
@@ -118,5 +123,5 @@ export const SECTION_TITLES: Record<string, (item: Record<string, unknown>) => s
   interests: (item) => item.name as string,
   references: (item) => item.name as string,
   researchThreads: (item) => item.name as string,
-  leadership: (item) => `${item.position || 'Role'} at ${item.organization || 'Organization'}`,
+  leadership: (item) => `${item.role || 'Role'} at ${item.organization || 'Organization'}`,
 }
