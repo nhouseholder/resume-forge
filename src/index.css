@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   ResumeForge Design System — "Editorial Precision"
+   Editorial-inspired aesthetic with warm navy tinted neutrals,
+   serif display + geometric sans pairing, 4pt spacing grid.
+   ═══════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Primary: Deep Navy (hue 250, tinted warm) ── */
+  --color-primary-50: oklch(0.97 0.008 250);
+  --color-primary-100: oklch(0.93 0.016 250);
+  --color-primary-200: oklch(0.85 0.035 250);
+  --color-primary-300: oklch(0.75 0.055 250);
+  --color-primary-400: oklch(0.65 0.090 250);
+  --color-primary-500: oklch(0.55 0.130 250);
+  --color-primary-600: oklch(0.45 0.150 250);
+  --color-primary-700: oklch(0.38 0.130 250);
+  --color-primary-800: oklch(0.30 0.090 250);
+  --color-primary-900: oklch(0.22 0.050 250);
+  --color-primary-950: oklch(0.15 0.030 250);
+
+  /* ── Accent: Warm Indigo (hue 290) ── */
+  --color-accent-50: oklch(0.96 0.015 290);
+  --color-accent-100: oklch(0.92 0.030 290);
+  --color-accent-200: oklch(0.84 0.065 290);
+  --color-accent-300: oklch(0.74 0.100 290);
+  --color-accent-400: oklch(0.65 0.150 290);
+  --color-accent-500: oklch(0.58 0.185 290);
+  --color-accent-600: oklch(0.50 0.170 290);
+  --color-accent-700: oklch(0.42 0.130 290);
+  --color-accent-800: oklch(0.35 0.095 290);
+  --color-accent-900: oklch(0.28 0.060 290);
+
+  /* ── Neutrals: Cool-tinted (chroma 0.005-0.008, hue 250) ── */
+  --color-neutral-50: oklch(0.985 0.004 250);
+  --color-neutral-100: oklch(0.955 0.005 250);
+  --color-neutral-200: oklch(0.905 0.007 250);
+  --color-neutral-300: oklch(0.825 0.007 250);
+  --color-neutral-400: oklch(0.705 0.009 250);
+  --color-neutral-500: oklch(0.555 0.009 250);
+  --color-neutral-600: oklch(0.455 0.009 250);
+  --color-neutral-700: oklch(0.375 0.007 250);
+  --color-neutral-800: oklch(0.285 0.007 250);
+  --color-neutral-900: oklch(0.205 0.005 250);
+  --color-neutral-950: oklch(0.135 0.004 250);
+
+  /* ── Semantic surfaces ── */
+  --color-surface: var(--color-neutral-50);
+  --color-surface-elevated: oklch(1.0 0 0);
+  --color-on-surface: var(--color-neutral-900);
+  --color-on-surface-muted: var(--color-neutral-500);
+  --color-border: var(--color-neutral-200);
+
+  /* ── Typography: Modular scale (3:1 ratio) ── */
+  --font-display: 'Instrument Serif', 'Georgia', serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-size-display: clamp(2.75rem, 5.5vw, 4.75rem);
+  --font-size-h1: clamp(2rem, 3.5vw, 3rem);
+  --font-size-h2: clamp(1.5rem, 2.5vw, 2rem);
+  --font-size-h3: clamp(1.25rem, 2vw, 1.5rem);
+  --font-size-h4: 1.25rem;
+  --font-size-body: 1rem;
+  --font-size-body-sm: 0.875rem;
+  --font-size-caption: 0.75rem;
+
+  /* ── Shadows: Subtle, warm ── */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.03), 0 1px 3px oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.03), 0 2px 4px oklch(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.04), 0 4px 6px oklch(0 0 0 / 0.03);
+  --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.05), 0 8px 10px oklch(0 0 0 / 0.03);
+
+  /* ── Motion: 100/300/500 rule ── */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 500ms;
+}
+
+/* ── Dark mode overrides ── */
+.dark {
+  --color-surface: var(--color-neutral-950);
+  --color-surface-elevated: var(--color-neutral-900);
+  --color-on-surface: var(--color-neutral-100);
+  --color-on-surface-muted: var(--color-neutral-400);
+  --color-border: var(--color-neutral-800);
+}
+
+/* ── Base ── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  hanging-punctuation: first last;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Display headings use serif ── */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+h1 { letter-spacing: -0.02em; }
+h2 { letter-spacing: -0.01em; }
+
+/* ── Focus: keyboard only, primary ring ── */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion: crossfade only ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Print: isolate resume preview ── */
+@media print {
+  /* Hide everything except the resume */
+  body > *:not([data-resume-preview]) {
+    display: none !important;
+  }
+
+  /* Make the resume fill the page */
+  [data-resume-preview] {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+
+  /* Ensure colors print accurately */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+}
