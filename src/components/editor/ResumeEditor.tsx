@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useResumeStore } from '@/store/useResumeStore'
 import { SectionNav } from './SectionNav'
 import { BasicsEditor } from './sections/BasicsEditor'
 import { SkillsEditor } from './sections/SkillsEditor'
 import { ListSectionEditor } from './sections/ListSectionEditor'
-import { TemplateCustomizer } from '@/components/customizer/TemplateCustomizer'
-import { ExportPanel } from '@/components/export/ExportPanel'
-import TemplateRenderer from '@/components/templates/TemplateRenderer'
 import { SECTION_FIELDS, SECTION_BLANKS, SECTION_TITLES } from './sections/sectionConfig'
 import type { ResumeData } from '@/types/resume'
+
+// Lazy-load heavy panels — only needed when user switches tabs
+const TemplateCustomizer = lazy(() =>
+  import('@/components/customizer/TemplateCustomizer').then((m) => ({ default: m.TemplateCustomizer }))
+)
+const ExportPanel = lazy(() =>
+  import('@/components/export/ExportPanel').then((m) => ({ default: m.ExportPanel }))
+)
+const TemplateRenderer = lazy(() => import('@/components/templates/TemplateRenderer'))
 
 const SECTION_LABELS: Record<string, string> = {
   work: 'Work Experience',
@@ -24,6 +30,25 @@ const SECTION_LABELS: Record<string, string> = {
   references: 'References',
   researchThreads: 'Research Threads',
   leadership: 'Leadership',
+}
+
+function PanelSkeleton() {
+  return (
+    <div className="animate-pulse space-y-6 p-4">
+      <div className="h-4 bg-neutral-200 rounded w-1/3" />
+      <div className="grid grid-cols-2 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-20 bg-neutral-100 rounded-lg" />
+        ))}
+      </div>
+      <div className="h-4 bg-neutral-200 rounded w-1/2" />
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-10 bg-neutral-100 rounded" />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 type ArraySectionKey = Exclude<keyof ResumeData, 'basics' | 'meta'>
@@ -98,7 +123,9 @@ export function ResumeEditor() {
 
         {view === 'customize' && (
           <div className="flex-1 p-6 lg:p-8 overflow-y-auto max-w-xl">
-            <TemplateCustomizer />
+            <Suspense fallback={<PanelSkeleton />}>
+              <TemplateCustomizer />
+            </Suspense>
           </div>
         )}
 
@@ -107,7 +134,9 @@ export function ResumeEditor() {
             {/* Export toolbar */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-200 bg-white/80">
               <span className="text-sm text-on-surface-muted">Live Preview</span>
-              <ExportPanel />
+              <Suspense fallback={<span className="text-sm text-neutral-400">Loading…</span>}>
+                <ExportPanel />
+              </Suspense>
             </div>
             {/* Preview area */}
             <div className="flex-1 overflow-y-auto bg-neutral-100 p-8 flex justify-center">
@@ -116,7 +145,9 @@ export function ResumeEditor() {
                 className="bg-white shadow-xl rounded-lg overflow-hidden print:shadow-none print:rounded-none"
                 style={{ width: '816px', minHeight: '1056px' }}
               >
-                <TemplateRenderer data={resume} meta={meta} />
+                <Suspense fallback={<div className="flex items-center justify-center h-[1056px]"><div className="w-8 h-8 rounded-full border-3 border-neutral-200 border-t-primary-600 animate-spin" /></div>}>
+                  <TemplateRenderer data={resume} meta={meta} />
+                </Suspense>
               </div>
             </div>
           </div>

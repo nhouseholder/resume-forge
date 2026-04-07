@@ -14,6 +14,7 @@ interface ParseRequest {
 const ALLOWED_ORIGINS = [
   'https://resumeforge.pages.dev',
   'https://resume-builder.nicholashouseholder.pages.dev',
+  'https://resume-forge-b73.pages.dev',
 ]
 
 // Allow localhost during development

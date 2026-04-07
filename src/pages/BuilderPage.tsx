@@ -124,10 +124,10 @@ function UploadState({ onFile }: { onFile: (file: File) => void }) {
     <div className="flex flex-col items-center gap-8">
       <div className="text-center">
         <h1 className="text-[var(--font-size-h1)] font-display text-on-surface leading-[1.15]">
-          Build your portfolio
+          Build your resume
         </h1>
         <p className="text-[var(--font-size-body)] text-on-surface-muted mt-4 max-w-md leading-[1.7]">
-          Upload your resume and we'll turn it into a stunning digital portfolio.
+          Upload your resume and we'll turn it into a stunning digital document.
           AI-powered parsing extracts every detail automatically.
         </p>
       </div>

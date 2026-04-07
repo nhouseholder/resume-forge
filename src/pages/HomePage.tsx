@@ -18,7 +18,7 @@ export default function HomePage() {
             onClick={() => navigate('/builder')}
             className="px-4 py-1.5 text-[var(--font-size-body-sm)] font-medium text-primary-600 hover:bg-primary-50 rounded-md transition-colors duration-[var(--duration-fast)]"
           >
-            Build portfolio
+            Build resume
           </button>
         </nav>
       </header>
@@ -39,14 +39,14 @@ export default function HomePage() {
             <h1 className="text-[var(--font-size-display)] font-display text-on-surface leading-[1.08]">
               Your resume,<br />
               <span className="italic text-primary-600">reimagined</span> as a<br />
-              digital portfolio
+              digital experience
             </h1>
 
             {/* Subhead — relaxed line-height, max-width for readability */}
             <p className="text-[var(--font-size-body)] text-on-surface-muted mt-8 max-w-[28rem] leading-[1.7]">
               Upload your resume and our AI extracts every detail — experience,
               education, publications, research — then renders it as a
-              stunning, shareable portfolio. No design skills needed.
+              stunning, shareable document. No design skills needed.
             </p>
 
             {/* CTAs — primary + secondary */}
@@ -59,7 +59,7 @@ export default function HomePage() {
                   active:scale-[0.98] active:bg-primary-800
                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
               >
-                Build your portfolio
+                Build your resume
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </svg>

@@ -19,12 +19,12 @@ export default function ViewPage() {
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="text-center max-w-md">
           <h1 className="text-[var(--font-size-h2)] font-display text-on-surface">
-            Shared portfolios
+            Shared resumes
           </h1>
           <p className="text-[var(--font-size-body)] text-on-surface-muted mt-4 leading-relaxed">
             {hash
-              ? 'This shared portfolio link isn\'t active yet. Shared resumes will be available in a future update.'
-              : 'Shareable portfolio links are coming soon. Build your portfolio now and you\'ll be first to access sharing.'}
+              ? 'This shared resume link isn\'t active yet. Shared resumes will be available in a future update.'
+              : 'Shareable resume links are coming soon. Build your resume now and you\'ll be first to access sharing.'}
           </p>
           <button
             onClick={() => navigate('/builder')}
@@ -34,7 +34,7 @@ export default function ViewPage() {
               active:scale-[0.98]
               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
           >
-            Build your portfolio
+            Build your resume
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
             </svg>

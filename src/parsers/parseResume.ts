@@ -1,7 +1,5 @@
 import type { ResumeData } from '@/types/resume'
 import { ResumeDataSchema } from '@/schemas/resumeSchema'
-import { extractPdfText } from './pdfParser'
-import { extractDocxText } from './docxParser'
 
 export interface ParseResult {
   success: boolean
@@ -14,7 +12,7 @@ const API_URL = '/api/parse-resume'
 
 /**
  * Full resume parsing pipeline:
- * 1. Client-side text extraction (PDF/DOCX)
+ * 1. Client-side text extraction (PDF/DOCX) — lazy-loaded to keep initial bundle small
  * 2. Server-side AI structured parsing (OpenAI)
  */
 export async function parseResume(file: File): Promise<ParseResult> {
@@ -22,9 +20,11 @@ export async function parseResume(file: File): Promise<ParseResult> {
   const ext = file.name.split('.').pop()?.toLowerCase()
 
   if (ext === 'pdf') {
+    const { extractPdfText } = await import('./pdfParser')
     const result = await extractPdfText(file)
     rawText = result.text
   } else if (ext === 'docx' || ext === 'doc') {
+    const { extractDocxText } = await import('./docxParser')
     const result = await extractDocxText(file)
     rawText = result.text
   } else {

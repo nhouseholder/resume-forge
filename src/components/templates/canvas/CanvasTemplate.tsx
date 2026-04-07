@@ -9,7 +9,7 @@ export const TEMPLATE_ID = 'canvas'
  * Target: Creative, Design, Arts
  * Asymmetric layout with full-width header, large display name,
  * pull-quote summary, varied section header styles.
- * Bold, expressive, portfolio-like.
+ * Bold, expressive, design-forward.
  */
 export default function CanvasTemplate({ data }: TemplateProps) {
   const { basics, work, education, skills, projects, publications, certifications, awards, interests, languages, volunteer, leadership, researchThreads, presentations } = data
