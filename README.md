@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# ResumeForge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ResumeForge turns a PDF or DOCX resume into an editable, design-forward resume site. Users can upload a resume, let AI structure the content, refine it in a sectioned editor, customize the template, save a browser PDF, and share a read-only link.
 
-Currently, two official plugins are available:
+## Current Product Surface
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- AI parsing for PDF and DOCX uploads through Cloudflare Functions
+- Structured editing for basics, work, education, skills, publications, projects, and extended resume sections
+- Three resume templates: Meridian, Signal, and Canvas
+- Theme controls for palette, typography, density, dark mode, and section visibility
+- Browser PDF export from the preview surface
+- Read-only share links using compressed client-side payloads
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript + Vite
+- Zustand for persisted editor state
+- Zod for runtime schema validation
+- Cloudflare Pages + Functions for deployment and parsing
+- `pdfjs-dist` and `mammoth` for client-side file extraction
 
-## Expanding the ESLint configuration
+## Local Development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the Vite app locally and upload a PDF or DOCX from the builder route.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Commands
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run lint
+npm run test
+npm run build
+npm run deploy
 ```
+
+## Deployment Notes
+
+ResumeForge deploys to the Cloudflare Pages project `resume-forge`.
+
+Required production secret:
+
+- `OPENAI_API_KEY`
+
+If the secret is missing, `/api/parse-resume` will return a configuration error and live AI parsing will fail.
+
+## Share Links
+
+Share links are browser-generated. They currently store the resume payload in the URL itself, which keeps the MVP simple and serverless but means extremely large resumes may need PDF export instead.
+
+## Repository Priorities
+
+1. Keep the parse flow reliable in production.
+2. Keep homepage and metadata copy aligned with shipped features.
+3. Reuse the existing template renderer instead of building parallel render paths.

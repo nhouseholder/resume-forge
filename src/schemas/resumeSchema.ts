@@ -137,7 +137,7 @@ const ResumeReferenceSchema = z.object({
   reference: z.string().optional(),
 });
 
-const ResumeMetaSchema = z.object({
+export const ResumeMetaSchema = z.object({
   templateId: z.string(),
   palette: z.string(),
   fontPairing: z.string(),

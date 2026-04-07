@@ -45,8 +45,8 @@ export default function HomePage() {
             {/* Subhead — relaxed line-height, max-width for readability */}
             <p className="text-[var(--font-size-body)] text-on-surface-muted mt-8 max-w-[28rem] leading-[1.7]">
               Upload your resume and our AI extracts every detail — experience,
-              education, publications, research — then renders it as a
-              stunning, shareable document. No design skills needed.
+              education, publications, research — then turns it into a polished,
+              share-ready resume page you can refine in minutes. No design skills needed.
             </p>
 
             {/* CTAs — primary + secondary */}
@@ -86,7 +86,7 @@ export default function HomePage() {
               <ValueProp
                 step="03"
                 title="Publish"
-                description="Choose a template, customize colors and fonts, then export as HTML, PDF, or a shareable link."
+                description="Choose a template, customize colors and fonts, then save it as a PDF or share it with a read-only link."
               />
             </div>
           </div>

@@ -50,6 +50,10 @@ export async function parseResume(file: File): Promise<ParseResult> {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: 'Unknown server error' }))
+      console.error('parseResume API request failed', {
+        status: response.status,
+        error: err.error,
+      })
       return { success: false, error: err.error || `Server error: ${response.status}` }
     }
 
@@ -68,7 +72,11 @@ export async function parseResume(file: File): Promise<ParseResult> {
       data: (result.success ? result.data : data) as ResumeData,
       rawText,
     }
-  } catch {
+  } catch (error) {
+    console.error('parseResume request failed before completion', {
+      fileName: file.name,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return {
       success: false,
       rawText,
