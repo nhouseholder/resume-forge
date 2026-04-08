@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { ResumeData, ResumeMeta } from '../../types/resume'
 import { resolveTheme } from '../../utils/themeResolver'
+import type { TemplateLayoutMode } from './templateUtils'
 import type { TemplateComponent } from './templateConfig'
 import { TEMPLATE_REGISTRY } from './templateConfig'
 
@@ -17,6 +18,35 @@ interface TemplateRendererProps {
 export default function TemplateRenderer({ data, meta }: TemplateRendererProps) {
   const theme = useMemo(() => resolveTheme(meta), [meta])
   const visibleData = useMemo(() => applySectionVisibility(data, meta), [data, meta])
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [containerWidth, setContainerWidth] = useState(816)
+
+  useEffect(() => {
+    const node = containerRef.current
+    if (!node || typeof ResizeObserver === 'undefined') return
+
+    const updateWidth = () => {
+      const nextWidth = node.getBoundingClientRect().width
+      if (nextWidth > 0) {
+        setContainerWidth(nextWidth)
+      }
+    }
+
+    updateWidth()
+
+    const observer = new ResizeObserver(() => {
+      updateWidth()
+    })
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  const layoutMode = useMemo<TemplateLayoutMode>(() => {
+    if (containerWidth < 520) return 'compact'
+    if (containerWidth < 720) return 'medium'
+    return 'full'
+  }, [containerWidth])
 
   const Template = useMemo<TemplateComponent | null>(() => {
     const entry = TEMPLATE_REGISTRY.find((t) => t.id === meta.templateId)
@@ -48,8 +78,8 @@ export default function TemplateRenderer({ data, meta }: TemplateRendererProps) 
       ))}
 
       {/* Scoped template container with CSS custom properties */}
-      <div style={{ ...containerBase, ...themeStyle }}>
-        <Template data={visibleData} />
+      <div ref={containerRef} data-template-layout={layoutMode} style={{ ...containerBase, ...themeStyle }}>
+        <Template data={visibleData} layoutMode={layoutMode} />
       </div>
     </>
   )
@@ -87,6 +117,7 @@ const containerBase: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 'var(--font-size-body)',
   lineHeight: 'var(--line-height-body)',
+  width: '100%',
   minHeight: '100%',
   WebkitFontSmoothing: 'antialiased',
   MozOsxFontSmoothing: 'grayscale',

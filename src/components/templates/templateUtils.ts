@@ -1,7 +1,10 @@
 import type { ResumeData } from '@/types/resume'
 
+export type TemplateLayoutMode = 'compact' | 'medium' | 'full'
+
 export interface TemplateProps {
   data: ResumeData
+  layoutMode: TemplateLayoutMode
 }
 
 export function formatDate(date?: string): string {

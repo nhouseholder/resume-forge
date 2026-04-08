@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { TemplateProps } from '../templateUtils'
+import type { TemplateLayoutMode, TemplateProps } from '../templateUtils'
 import { formatDate } from '../templateUtils'
 
 export const TEMPLATE_ID = 'signal'
@@ -11,7 +11,8 @@ export const TEMPLATE_ID = 'signal'
  * Right: skills + languages + certs + interests.
  * Accent section headers with extending horizontal line.
  */
-export default function SignalTemplate({ data }: TemplateProps) {
+export default function SignalTemplate({ data, layoutMode }: TemplateProps) {
+  const styles = getStyles(layoutMode)
   const { basics, work, education, skills, projects, certifications, awards, interests, languages, publications, volunteer, leadership, researchThreads, presentations } = data
 
   return (
@@ -26,13 +27,13 @@ export default function SignalTemplate({ data }: TemplateProps) {
         )}
         <div style={styles.contactRow}>
           {basics.location && (
-            <ContactItem text={[basics.location.city, basics.location.region].filter(Boolean).join(', ')} />
+            <ContactItem text={[basics.location.city, basics.location.region].filter(Boolean).join(', ')} style={styles.contactItem} />
           )}
-          {basics.email && <ContactItem text={basics.email} />}
-          {basics.phone && <ContactItem text={basics.phone} />}
-          {basics.url && <ContactItem text={basics.url} />}
+          {basics.email && <ContactItem text={basics.email} style={styles.contactItem} />}
+          {basics.phone && <ContactItem text={basics.phone} style={styles.contactItem} />}
+          {basics.url && <ContactItem text={basics.url} style={styles.contactItem} />}
           {basics.profiles?.map((p, i) => (
-            <ContactItem key={i} text={`${p.network}: ${p.username ?? p.url ?? ''}`} />
+            <ContactItem key={i} text={`${p.network}: ${p.username ?? p.url ?? ''}`} style={styles.contactItem} />
           ))}
         </div>
       </header>
@@ -43,14 +44,14 @@ export default function SignalTemplate({ data }: TemplateProps) {
         <div style={styles.leftCol}>
           {/* Summary */}
           {basics.summary && (
-            <Section title="Summary">
+            <Section styles={styles} title="Summary">
               <p style={styles.summary}>{basics.summary}</p>
             </Section>
           )}
 
           {/* Work */}
           {work.length > 0 && (
-            <Section title="Experience">
+            <Section styles={styles} title="Experience">
               {work.map((w, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryHeader}>
@@ -79,7 +80,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Education */}
           {education.length > 0 && (
-            <Section title="Education">
+            <Section styles={styles} title="Education">
               {education.map((e, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryHeader}>
@@ -101,7 +102,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Projects */}
           {projects.length > 0 && (
-            <Section title="Projects">
+            <Section styles={styles} title="Projects">
               {projects.map((p, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryHeader}>
@@ -129,7 +130,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Publications */}
           {publications.length > 0 && (
-            <Section title="Publications">
+            <Section styles={styles} title="Publications">
               {publications.map((pub, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryTitle}>{pub.name}</div>
@@ -144,7 +145,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Volunteer */}
           {volunteer && volunteer.length > 0 && (
-            <Section title="Volunteer">
+            <Section styles={styles} title="Volunteer">
               {volunteer.map((v, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryHeader}>
@@ -163,7 +164,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Leadership */}
           {leadership && leadership.length > 0 && (
-            <Section title="Leadership">
+            <Section styles={styles} title="Leadership">
               {leadership.map((l, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryHeader}>
@@ -182,7 +183,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Research */}
           {researchThreads && researchThreads.length > 0 && (
-            <Section title="Research">
+            <Section styles={styles} title="Research">
               {researchThreads.map((r, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryTitle}>{r.name}</div>
@@ -194,7 +195,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Presentations */}
           {presentations && presentations.length > 0 && (
-            <Section title="Presentations">
+            <Section styles={styles} title="Presentations">
               {presentations.map((p, i) => (
                 <div key={i} style={styles.entry}>
                   <div style={styles.entryTitle}>{p.name}</div>
@@ -212,7 +213,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
         <div style={styles.rightCol}>
           {/* Skills */}
           {skills.length > 0 && (
-            <Section title="Skills">
+            <Section styles={styles} title="Skills">
               {skills.map((s, i) => (
                 <div key={i} style={styles.skillGroup}>
                   <div style={styles.skillName}>{s.name}</div>
@@ -230,7 +231,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Languages */}
           {languages && languages.length > 0 && (
-            <Section title="Languages">
+            <Section styles={styles} title="Languages">
               {languages.map((l, i) => (
                 <div key={i} style={styles.langRow}>
                   <span style={styles.skillName}>{l.language}</span>
@@ -242,7 +243,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Certifications */}
           {certifications && certifications.length > 0 && (
-            <Section title="Certifications">
+            <Section styles={styles} title="Certifications">
               {certifications.map((c, i) => (
                 <div key={i} style={styles.certEntry}>
                   <div style={styles.entryTitle}>{c.name}</div>
@@ -257,7 +258,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Awards */}
           {awards && awards.length > 0 && (
-            <Section title="Awards">
+            <Section styles={styles} title="Awards">
               {awards.map((a, i) => (
                 <div key={i} style={styles.certEntry}>
                   <div style={styles.entryTitle}>{a.title}</div>
@@ -272,7 +273,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
 
           {/* Interests */}
           {interests && interests.length > 0 && (
-            <Section title="Interests">
+            <Section styles={styles} title="Interests">
               {interests.map((int, i) => (
                 <div key={i} style={styles.skillGroup}>
                   <span style={styles.skillName}>{int.name}</span>
@@ -289,13 +290,11 @@ export default function SignalTemplate({ data }: TemplateProps) {
   )
 }
 
-// ── Helpers ──
-
-function ContactItem({ text }: { text: string }) {
-  return <span style={styles.contactItem}>{text}</span>
+function ContactItem({ text, style }: { text: string; style: React.CSSProperties }) {
+  return <span style={style}>{text}</span>
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, styles }: { title: string; children: React.ReactNode; styles: Record<string, React.CSSProperties> }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.sectionTitle}>
@@ -307,168 +306,220 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-// ── Styles ──
+function getStyles(layoutMode: TemplateLayoutMode): Record<string, React.CSSProperties> {
+  const compact = layoutMode === 'compact'
+  const medium = layoutMode === 'medium'
+  const full = layoutMode === 'full'
 
-const styles: Record<string, React.CSSProperties> = {
-  root: {
-    fontFamily: 'var(--font-body)',
-    color: 'var(--color-text)',
-    lineHeight: 'var(--line-height-body)',
-    padding: 'var(--space-8) var(--space-8)',
-    maxWidth: '900px',
-  },
-  header: {
-    marginBottom: 'var(--space-6)',
-    paddingBottom: 'var(--space-5)',
-    borderBottom: '2px solid var(--color-accent)',
-  },
-  name: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h1)',
-    fontWeight: 'var(--font-heading-weight)' as unknown as number,
-    color: 'var(--color-heading)',
-    lineHeight: 'var(--line-height-h1)',
-    letterSpacing: 'var(--letter-spacing-h1)',
-    margin: 0,
-  },
-  label: {
-    fontSize: 'var(--font-size-body)',
-    color: 'var(--color-accent)',
-    marginTop: 'var(--space-1)',
-    marginBottom: 'var(--space-2)',
-  },
-  contactRow: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-4)',
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-  },
-  contactItem: {},
-  columns: {
-    display: 'flex',
-    gap: 'var(--space-8)',
-  },
-  leftCol: {
-    flex: '2',
-    minWidth: 0,
-  },
-  rightCol: {
-    flex: '1',
-    minWidth: '200px',
-  },
-  section: {
-    marginTop: 'var(--space-6)',
-  },
-  sectionTitle: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h2)',
-    fontWeight: 'var(--font-heading-weight)' as unknown as number,
-    color: 'var(--color-accent)',
-    letterSpacing: 'var(--letter-spacing-h2)',
-    textTransform: 'uppercase' as const,
-    marginBottom: 'var(--space-3)',
-    lineHeight: 'var(--line-height-h2)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-  },
-  sectionLine: {
-    flex: 1,
-    height: '1px',
-    backgroundColor: 'var(--color-border)',
-    minWidth: 'var(--space-4)',
-  },
-  entry: {
-    marginBottom: 'var(--space-4)',
-  },
-  entryHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-1)',
-  },
-  entryTitle: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h3)',
-    fontWeight: 600,
-    color: 'var(--color-text)',
-    lineHeight: 'var(--line-height-h3)',
-  },
-  entryOrg: {
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-    marginTop: 'var(--space-0)',
-  },
-  entryMeta: {
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-    textAlign: 'right' as const,
-  },
-  entryDates: {
-    fontSize: 'var(--font-size-caption)',
-    color: 'var(--color-text-muted)',
-  },
-  entrySummary: {
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-    marginTop: 'var(--space-1)',
-    lineHeight: 'var(--line-height-body-sm)',
-  },
-  summary: {
-    fontSize: 'var(--font-size-body-sm)',
-    lineHeight: 'var(--line-height-body-sm)',
-    color: 'var(--color-text-muted)',
-  },
-  highlights: {
-    listStyle: 'none',
-    padding: 0,
-    margin: 'var(--space-1) 0 0 0',
-  },
-  highlightItem: {
-    paddingLeft: 'var(--space-3)',
-    fontSize: 'var(--font-size-body-sm)',
-    lineHeight: 'var(--line-height-body-sm)',
-    marginBottom: 'var(--space-1)',
-  },
-  skillGroup: {
-    marginBottom: 'var(--space-3)',
-  },
-  skillName: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-body-sm)',
-    fontWeight: 600,
-    color: 'var(--color-text)',
-    display: 'block',
-  },
-  skillChips: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-1)',
-    marginTop: 'var(--space-1)',
-  },
-  skillChip: {
-    fontSize: 'var(--font-size-caption)',
-    color: 'var(--color-text-muted)',
-    backgroundColor: 'var(--color-surface-el)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-sm)',
-    padding: 'var(--space-0) var(--space-2)',
-    lineHeight: 'var(--line-height-caption)',
-  },
-  langRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 'var(--space-1)',
-    fontSize: 'var(--font-size-body-sm)',
-  },
-  langLevel: {
-    color: 'var(--color-text-muted)',
-    fontSize: 'var(--font-size-caption)',
-  },
-  certEntry: {
-    marginBottom: 'var(--space-3)',
-  },
+  return {
+    root: {
+      fontFamily: 'var(--font-body)',
+      color: 'var(--color-text)',
+      lineHeight: 'var(--line-height-body)',
+      padding: compact
+        ? 'var(--space-5) var(--space-4)'
+        : medium
+          ? 'var(--space-7) var(--space-6)'
+          : 'var(--space-10) var(--space-8)',
+      maxWidth: '100%',
+      boxSizing: 'border-box',
+      background: 'linear-gradient(180deg, rgba(255,255,255,0.94), rgba(247,250,255,0.98))',
+    },
+    header: {
+      marginBottom: 'var(--space-6)',
+      padding: 'var(--space-4) 0 var(--space-5)',
+      borderTop: '3px solid var(--color-accent)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+    name: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '2rem' : medium ? '2.6rem' : 'var(--font-size-h1)',
+      fontWeight: 'var(--font-heading-weight)',
+      color: 'var(--color-heading)',
+      lineHeight: compact ? 1.04 : 'var(--line-height-h1)',
+      letterSpacing: 'var(--letter-spacing-h1)',
+      margin: 0,
+    },
+    label: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      fontWeight: 600,
+      letterSpacing: '0.18em',
+      textTransform: 'uppercase',
+      color: 'var(--color-accent)',
+      marginTop: 'var(--space-2)',
+      marginBottom: 'var(--space-3)',
+    },
+    contactRow: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 'var(--space-2)',
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      color: 'var(--color-text-muted)',
+    },
+    contactItem: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '2px 0',
+    },
+    columns: {
+      display: 'grid',
+      gridTemplateColumns: full ? 'minmax(0, 1.65fr) minmax(13rem, 0.95fr)' : '1fr',
+      gap: compact ? 'var(--space-5)' : 'var(--space-7)',
+    },
+    leftCol: {
+      minWidth: 0,
+    },
+    rightCol: {
+      minWidth: 0,
+      borderLeft: full ? '1px solid var(--color-border)' : 'none',
+      paddingLeft: full ? 'var(--space-5)' : 0,
+      borderTop: full ? 'none' : '1px solid var(--color-border)',
+      paddingTop: full ? 0 : 'var(--space-4)',
+    },
+    section: {
+      marginTop: 'var(--space-6)',
+    },
+    sectionTitle: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      fontWeight: 600,
+      color: 'var(--color-accent)',
+      letterSpacing: '0.18em',
+      textTransform: 'uppercase',
+      marginBottom: 'var(--space-3)',
+      lineHeight: 'var(--line-height-caption)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--space-3)',
+    },
+    sectionLine: {
+      flex: 1,
+      height: '1px',
+      backgroundColor: 'var(--color-accent)',
+      minWidth: 'var(--space-4)',
+      opacity: 0.35,
+    },
+    entry: {
+      marginBottom: 'var(--space-4)',
+      paddingBottom: 'var(--space-4)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+    entryHeader: {
+      display: 'grid',
+      gridTemplateColumns: compact ? '1fr' : 'minmax(0, 1fr) auto',
+      gap: 'var(--space-1) var(--space-4)',
+      alignItems: 'start',
+    },
+    entryTitle: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '1rem' : 'var(--font-size-h3)',
+      fontWeight: 600,
+      color: 'var(--color-text)',
+      lineHeight: 'var(--line-height-h3)',
+    },
+    entryOrg: {
+      fontSize: 'var(--font-size-body-sm)',
+      color: 'var(--color-text-muted)',
+      marginTop: 'var(--space-1)',
+    },
+    entryMeta: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      color: 'var(--color-text-muted)',
+      textAlign: compact ? 'left' : 'right',
+    },
+    entryDates: {
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+    },
+    entrySummary: {
+      fontSize: 'var(--font-size-body-sm)',
+      color: 'var(--color-text)',
+      marginTop: 'var(--space-2)',
+      lineHeight: 'var(--line-height-body-sm)',
+      padding: 'var(--space-3)',
+      backgroundColor: 'var(--color-surface-el)',
+      borderLeft: '2px solid var(--color-accent)',
+    },
+    summary: {
+      fontSize: 'var(--font-size-body-sm)',
+      lineHeight: 'var(--line-height-body-sm)',
+      color: 'var(--color-text)',
+      padding: 'var(--space-3)',
+      backgroundColor: 'var(--color-surface-el)',
+      borderLeft: '2px solid var(--color-accent)',
+    },
+    highlights: {
+      listStyle: 'none',
+      padding: 0,
+      margin: 'var(--space-2) 0 0 0',
+    },
+    highlightItem: {
+      paddingLeft: 'var(--space-3)',
+      borderLeft: '1px solid var(--color-border)',
+      fontSize: 'var(--font-size-body-sm)',
+      lineHeight: 'var(--line-height-body-sm)',
+      marginBottom: 'var(--space-2)',
+    },
+    skillGroup: {
+      marginBottom: 'var(--space-3)',
+      paddingBottom: 'var(--space-3)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+    skillName: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      fontWeight: 600,
+      letterSpacing: '0.14em',
+      textTransform: 'uppercase',
+      color: 'var(--color-text)',
+      display: 'block',
+    },
+    skillChips: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 'var(--space-1)',
+      marginTop: 'var(--space-2)',
+    },
+    skillChip: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+      backgroundColor: 'transparent',
+      border: '1px solid var(--color-border)',
+      borderRadius: '2px',
+      padding: '2px 6px',
+      lineHeight: 'var(--line-height-caption)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
+    langRow: {
+      display: 'grid',
+      gridTemplateColumns: '1fr auto',
+      gap: 'var(--space-2)',
+      alignItems: 'baseline',
+      marginBottom: 'var(--space-2)',
+      fontSize: 'var(--font-size-body-sm)',
+      paddingBottom: 'var(--space-2)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+    langLevel: {
+      color: 'var(--color-text-muted)',
+      fontSize: 'var(--font-size-caption)',
+      fontFamily: 'var(--font-mono)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
+    certEntry: {
+      marginBottom: 'var(--space-3)',
+      paddingBottom: 'var(--space-3)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+  }
 }

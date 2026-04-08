@@ -11,20 +11,20 @@ export default function ViewPage() {
 
   return (
     <div className="shell-page min-h-screen flex flex-col">
-      <header className="border-b border-border/60 bg-surface/85 backdrop-blur-xl">
+      <header className="border-b border-border/60 bg-surface/95">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-6 lg:px-8">
           <button
             onClick={() => navigate('/')}
             className="text-left transition-colors duration-[var(--duration-normal)] hover:text-primary-600"
           >
-            <span className="shell-kicker block">Published with ResumeForge</span>
+            <span className="shell-kicker block">Published dossier</span>
             <span className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface">
               Resume<span className="text-primary-600 italic">Forge</span>
             </span>
           </button>
           <button
             onClick={() => navigate('/builder')}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-white/70 px-4 py-2 text-[var(--font-size-body-sm)] font-semibold text-on-surface transition-all duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:bg-white"
+            className="desk-button desk-button-subtle"
           >
             Create your own
           </button>
@@ -68,23 +68,26 @@ export default function ViewPage() {
                   This link contains a read-only snapshot of the current resume and its chosen theme. It opens without an account and preserves the exact document styling selected in the editor.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-[var(--font-size-body-sm)] text-on-surface-muted">
-                <span className="shell-chip">Read-only link</span>
-                <span className="shell-chip">Built with ResumeForge</span>
+              <div className="folio-meta">
+                <span>Read-only link</span>
+                <span>Reader-facing snapshot</span>
+                <span>Built with ResumeForge</span>
               </div>
             </div>
 
             <div className="mx-auto max-w-7xl">
-              <div className="workspace-stage overflow-x-auto p-4 sm:p-6 lg:p-10">
-                <div
-                  data-resume-preview
-                  className="workspace-paper mx-auto print:rounded-none print:shadow-none"
-                  style={{ width: '816px', minHeight: '1056px' }}
-                >
-                  <TemplateRenderer
-                    data={{ ...result.payload.resume, meta: result.payload.meta }}
-                    meta={result.payload.meta}
-                  />
+              <div className="workspace-stage overflow-x-hidden p-4 sm:p-6 lg:p-10">
+                <div className="mx-auto w-full max-w-[816px]">
+                  <div
+                    data-resume-preview
+                    className="workspace-paper mx-auto print:rounded-none print:shadow-none"
+                    style={{ width: '100%', minHeight: '1056px' }}
+                  >
+                    <TemplateRenderer
+                      data={{ ...result.payload.resume, meta: result.payload.meta }}
+                      meta={result.payload.meta}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

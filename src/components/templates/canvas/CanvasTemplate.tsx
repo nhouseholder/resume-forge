@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { TemplateProps } from '../templateUtils'
+import type { TemplateLayoutMode, TemplateProps } from '../templateUtils'
 import { formatDate } from '../templateUtils'
 
 export const TEMPLATE_ID = 'canvas'
@@ -11,7 +11,8 @@ export const TEMPLATE_ID = 'canvas'
  * pull-quote summary, varied section header styles.
  * Bold, expressive, design-forward.
  */
-export default function CanvasTemplate({ data }: TemplateProps) {
+export default function CanvasTemplate({ data, layoutMode }: TemplateProps) {
+  const styles = getStyles(layoutMode)
   const { basics, work, education, skills, projects, publications, certifications, awards, interests, languages, volunteer, leadership, researchThreads, presentations } = data
 
   return (
@@ -49,7 +50,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Work Experience ── */}
       {work.length > 0 && (
-        <Section title="Experience" variant="underline">
+        <Section styles={styles} title="Experience" variant="underline">
           {work.map((w, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -78,7 +79,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Education ── */}
       {education.length > 0 && (
-        <Section title="Education" variant="bg">
+        <Section styles={styles} title="Education" variant="bg">
           {education.map((e, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -100,7 +101,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Skills ── */}
       {skills.length > 0 && (
-        <Section title="Skills" variant="accent">
+        <Section styles={styles} title="Skills" variant="accent">
           <div style={styles.skillsLayout}>
             {skills.map((s, i) => (
               <div key={i} style={styles.skillCategory}>
@@ -120,7 +121,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Projects ── */}
       {projects.length > 0 && (
-        <Section title="Projects" variant="underline">
+        <Section styles={styles} title="Projects" variant="underline">
           {projects.map((p, i) => (
             <div key={i} style={styles.projectCard}>
               <div style={styles.projectHeader}>
@@ -153,7 +154,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Publications ── */}
       {publications.length > 0 && (
-        <Section title="Publications" variant="underline">
+        <Section styles={styles} title="Publications" variant="underline">
           {publications.map((pub, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryTitle}>{pub.name}</div>
@@ -169,7 +170,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Certifications ── */}
       {certifications && certifications.length > 0 && (
-        <Section title="Certifications" variant="bg">
+        <Section styles={styles} title="Certifications" variant="bg">
           {certifications.map((c, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -186,7 +187,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Awards ── */}
       {awards && awards.length > 0 && (
-        <Section title="Awards" variant="accent">
+        <Section styles={styles} title="Awards" variant="accent">
           {awards.map((a, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -203,7 +204,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Languages ── */}
       {languages && languages.length > 0 && (
-        <Section title="Languages" variant="bg">
+        <Section styles={styles} title="Languages" variant="bg">
           <div style={styles.skillsLayout}>
             {languages.map((l, i) => (
               <div key={i} style={styles.langRow}>
@@ -217,7 +218,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Interests ── */}
       {interests && interests.length > 0 && (
-        <Section title="Interests" variant="underline">
+        <Section styles={styles} title="Interests" variant="underline">
           <div style={styles.skillsLayout}>
             {interests.map((int, i) => (
               <div key={i} style={styles.skillCategory}>
@@ -233,7 +234,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Volunteer ── */}
       {volunteer && volunteer.length > 0 && (
-        <Section title="Volunteer" variant="underline">
+        <Section styles={styles} title="Volunteer" variant="underline">
           {volunteer.map((v, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -252,7 +253,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Leadership ── */}
       {leadership && leadership.length > 0 && (
-        <Section title="Leadership" variant="bg">
+        <Section styles={styles} title="Leadership" variant="bg">
           {leadership.map((l, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryHeader}>
@@ -271,7 +272,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Research ── */}
       {researchThreads && researchThreads.length > 0 && (
-        <Section title="Research" variant="accent">
+        <Section styles={styles} title="Research" variant="accent">
           {researchThreads.map((r, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryTitle}>{r.name}</div>
@@ -290,7 +291,7 @@ export default function CanvasTemplate({ data }: TemplateProps) {
 
       {/* ── Presentations ── */}
       {presentations && presentations.length > 0 && (
-        <Section title="Presentations" variant="underline">
+        <Section styles={styles} title="Presentations" variant="underline">
           {presentations.map((p, i) => (
             <div key={i} style={styles.entry}>
               <div style={styles.entryTitle}>{p.name}</div>
@@ -307,20 +308,28 @@ export default function CanvasTemplate({ data }: TemplateProps) {
   )
 }
 
-// ── Section with variant styles ──
-
-function Section({ title, variant, children }: { title: string; variant: 'underline' | 'bg' | 'accent'; children: React.ReactNode }) {
+function Section({
+  title,
+  variant,
+  children,
+  styles,
+}: {
+  title: string
+  variant: 'underline' | 'bg' | 'accent'
+  children: React.ReactNode
+  styles: Record<string, React.CSSProperties>
+}) {
   const variantStyle = variant === 'bg'
-    ? { backgroundColor: 'var(--color-surface-el)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }
+    ? styles.sectionPanel
     : variant === 'accent'
-    ? { borderLeft: '3px solid var(--color-accent)', paddingLeft: 'var(--space-4)' }
-    : {}
+      ? styles.sectionAccent
+      : undefined
 
   const titleStyle = variant === 'accent'
-    ? { ...styles.sectionTitle, color: 'var(--color-accent)' }
+    ? styles.sectionTitleAccent
     : variant === 'bg'
-    ? { ...styles.sectionTitle, color: 'var(--color-heading)' }
-    : styles.sectionTitle
+      ? styles.sectionTitleSoft
+      : styles.sectionTitle
 
   return (
     <section style={{ ...styles.section, ...variantStyle }}>
@@ -330,194 +339,275 @@ function Section({ title, variant, children }: { title: string; variant: 'underl
   )
 }
 
-// ── Styles ──
+function getStyles(layoutMode: TemplateLayoutMode): Record<string, React.CSSProperties> {
+  const compact = layoutMode === 'compact'
+  const medium = layoutMode === 'medium'
+  const full = layoutMode === 'full'
 
-const styles: Record<string, React.CSSProperties> = {
-  root: {
-    fontFamily: 'var(--font-body)',
-    color: 'var(--color-text)',
-    lineHeight: 'var(--line-height-body)',
-    padding: 'var(--space-12) var(--space-10)',
-    maxWidth: '820px',
-  },
-  header: {
-    marginBottom: 'var(--space-10)',
-    paddingBottom: 'var(--space-8)',
-    borderBottom: '3px solid var(--color-accent)',
-  },
-  name: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h1)',
-    fontWeight: 900,
-    color: 'var(--color-heading)',
-    lineHeight: 'var(--line-height-h1)',
-    letterSpacing: '-0.03em',
-    margin: 0,
-  },
-  label: {
-    fontSize: 'var(--font-size-h3)',
-    color: 'var(--color-accent)',
-    marginTop: 'var(--space-2)',
-    marginBottom: 'var(--space-4)',
-    fontWeight: 400,
-    fontStyle: 'italic' as const,
-  },
-  contactRow: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-4)',
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-  },
-  contactItem: {},
-  summaryBlock: {
-    display: 'flex',
-    gap: 'var(--space-4)',
-    marginBottom: 'var(--space-10)',
-  },
-  summaryAccent: {
-    width: '3px',
-    backgroundColor: 'var(--color-accent)',
-    borderRadius: 'var(--radius-sm)',
-    flexShrink: 0,
-  },
-  summary: {
-    fontSize: 'var(--font-size-body)',
-    lineHeight: 'var(--line-height-body)',
-    color: 'var(--color-text-muted)',
-    fontStyle: 'italic' as const,
-    margin: 0,
-  },
-  section: {
-    marginTop: 'var(--space-10)',
-  },
-  sectionTitle: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h2)',
-    fontWeight: 700,
-    color: 'var(--color-heading)',
-    letterSpacing: 'var(--letter-spacing-h2)',
-    textTransform: 'uppercase' as const,
-    marginBottom: 'var(--space-5)',
-    lineHeight: 'var(--line-height-h2)',
-    borderBottom: '2px solid var(--color-accent)',
-    paddingBottom: 'var(--space-2)',
-  },
-  entry: {
-    marginBottom: 'var(--space-6)',
-  },
-  entryHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-2)',
-  },
-  entryTitle: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-h3)',
-    fontWeight: 600,
-    color: 'var(--color-text)',
-    lineHeight: 'var(--line-height-h3)',
-  },
-  entryCompany: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-body)',
-    fontWeight: 600,
-    color: 'var(--color-accent)',
-    lineHeight: 'var(--line-height-body)',
-  },
-  entryOrg: {
-    fontSize: 'var(--font-size-body)',
-    color: 'var(--color-text-muted)',
-    fontWeight: 400,
-  },
-  entryMeta: {
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-    textAlign: 'right' as const,
-  },
-  entryDates: {
-    fontSize: 'var(--font-size-caption)',
-    color: 'var(--color-text-muted)',
-  },
-  entrySummary: {
-    fontSize: 'var(--font-size-body-sm)',
-    color: 'var(--color-text-muted)',
-    marginTop: 'var(--space-2)',
-    lineHeight: 'var(--line-height-body-sm)',
-  },
-  highlights: {
-    listStyle: 'none',
-    padding: 0,
-    margin: 'var(--space-2) 0 0 0',
-  },
-  highlightItem: {
-    paddingLeft: 'var(--space-4)',
-    fontSize: 'var(--font-size-body-sm)',
-    lineHeight: 'var(--line-height-body-sm)',
-    marginBottom: 'var(--space-2)',
-  },
-  skillsLayout: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 'var(--space-4)',
-  },
-  skillCategory: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    flexWrap: 'wrap' as const,
-  },
-  skillName: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: 'var(--font-size-body-sm)',
-    fontWeight: 600,
-    color: 'var(--color-text)',
-  },
-  skillChips: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-1)',
-  },
-  skillChip: {
-    fontSize: 'var(--font-size-caption)',
-    color: 'var(--color-text-muted)',
-    backgroundColor: 'var(--color-surface-el)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-md)',
-    padding: 'var(--space-0) var(--space-2)',
-  },
-  skillChipAccent: {
-    fontSize: 'var(--font-size-caption)',
-    color: 'var(--color-accent)',
-    backgroundColor: 'var(--color-primary-light)',
-    border: '1px solid var(--color-accent)',
-    borderRadius: 'var(--radius-md)',
-    padding: 'var(--space-0) var(--space-2)',
-  },
-  projectCard: {
-    padding: 'var(--space-4)',
-    backgroundColor: 'var(--color-surface)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-lg)',
-    marginBottom: 'var(--space-4)',
-  },
-  projectHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    flexWrap: 'wrap' as const,
-    gap: 'var(--space-2)',
-  },
-  langRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    fontSize: 'var(--font-size-body-sm)',
-  },
-  langLevel: {
-    color: 'var(--color-text-muted)',
-    fontSize: 'var(--font-size-caption)',
-  },
+  return {
+    root: {
+      fontFamily: 'var(--font-body)',
+      color: 'var(--color-text)',
+      lineHeight: 'var(--line-height-body)',
+      padding: compact
+        ? 'var(--space-5) var(--space-4)'
+        : medium
+          ? 'var(--space-8) var(--space-6)'
+          : 'var(--space-12) var(--space-10)',
+      maxWidth: '100%',
+      boxSizing: 'border-box',
+    },
+    header: {
+      display: 'grid',
+      gridTemplateColumns: full ? 'minmax(0, 1.1fr) minmax(14rem, 0.9fr)' : '1fr',
+      gap: compact ? 'var(--space-4)' : 'var(--space-6)',
+      marginBottom: 'var(--space-8)',
+      padding: compact ? 'var(--space-5)' : 'var(--space-6)',
+      backgroundColor: 'var(--color-surface-el)',
+      border: '1px solid var(--color-border)',
+    },
+    name: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '2.35rem' : medium ? '3rem' : '4rem',
+      fontWeight: 900,
+      color: 'var(--color-heading)',
+      lineHeight: compact ? 0.98 : 0.95,
+      letterSpacing: '-0.04em',
+      margin: 0,
+      maxWidth: '10ch',
+    },
+    label: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-accent)',
+      marginTop: 'var(--space-3)',
+      marginBottom: 'var(--space-4)',
+      fontWeight: 600,
+      letterSpacing: '0.16em',
+      textTransform: 'uppercase',
+    },
+    contactRow: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 'var(--space-2)',
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+    },
+    contactItem: {
+      display: 'inline-flex',
+      alignItems: 'center',
+    },
+    summaryBlock: {
+      display: 'grid',
+      gridTemplateColumns: compact ? '1fr' : '6px minmax(0, 1fr)',
+      gap: compact ? 'var(--space-3)' : 'var(--space-4)',
+      marginBottom: 'var(--space-8)',
+      padding: compact ? 'var(--space-4)' : 'var(--space-5)',
+      background: 'linear-gradient(180deg, rgba(251,247,240,0.94), rgba(255,255,255,0.98))',
+      border: '1px solid var(--color-border)',
+    },
+    summaryAccent: {
+      width: compact ? '100%' : '6px',
+      height: compact ? '3px' : 'auto',
+      backgroundColor: 'var(--color-accent)',
+      flexShrink: 0,
+    },
+    summary: {
+      fontSize: compact ? '1rem' : '1.1rem',
+      lineHeight: compact ? 1.7 : 1.8,
+      color: 'var(--color-text)',
+      margin: 0,
+      fontStyle: 'italic',
+      maxWidth: '54ch',
+    },
+    section: {
+      marginTop: compact ? 'var(--space-7)' : 'var(--space-8)',
+    },
+    sectionPanel: {
+      backgroundColor: 'var(--color-surface-el)',
+      border: '1px solid var(--color-border)',
+      padding: compact ? 'var(--space-4)' : 'var(--space-5)',
+    },
+    sectionAccent: {
+      borderLeft: '4px solid var(--color-accent)',
+      paddingLeft: compact ? 'var(--space-3)' : 'var(--space-4)',
+    },
+    sectionTitle: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '1.02rem' : '1.18rem',
+      fontWeight: 700,
+      color: 'var(--color-heading)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      marginBottom: 'var(--space-4)',
+      lineHeight: 1.15,
+      borderBottom: '2px solid var(--color-accent)',
+      paddingBottom: 'var(--space-2)',
+    },
+    sectionTitleSoft: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '1.02rem' : '1.18rem',
+      fontWeight: 700,
+      color: 'var(--color-heading)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      marginBottom: 'var(--space-4)',
+      lineHeight: 1.15,
+      borderBottom: '1px solid var(--color-border)',
+      paddingBottom: 'var(--space-2)',
+    },
+    sectionTitleAccent: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '1.02rem' : '1.18rem',
+      fontWeight: 700,
+      color: 'var(--color-accent)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      marginBottom: 'var(--space-4)',
+      lineHeight: 1.15,
+      borderBottom: '2px solid var(--color-accent)',
+      paddingBottom: 'var(--space-2)',
+    },
+    entry: {
+      marginBottom: compact ? 'var(--space-5)' : 'var(--space-6)',
+      paddingTop: 'var(--space-2)',
+      borderTop: '1px solid var(--color-border)',
+    },
+    entryHeader: {
+      display: 'grid',
+      gridTemplateColumns: compact ? '1fr' : 'minmax(0, 1fr) auto',
+      gap: 'var(--space-2) var(--space-4)',
+      alignItems: 'baseline',
+    },
+    entryTitle: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: compact ? '1.02rem' : 'var(--font-size-h3)',
+      fontWeight: 600,
+      color: 'var(--color-text)',
+      lineHeight: 'var(--line-height-h3)',
+    },
+    entryCompany: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      fontWeight: 600,
+      color: 'var(--color-accent)',
+      lineHeight: 'var(--line-height-caption)',
+      textTransform: 'uppercase',
+      letterSpacing: '0.14em',
+      marginBottom: 'var(--space-1)',
+    },
+    entryOrg: {
+      fontSize: 'var(--font-size-body)',
+      color: 'var(--color-text-muted)',
+      fontWeight: 400,
+    },
+    entryMeta: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+      textAlign: compact ? 'left' : 'right',
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+    },
+    entryDates: {
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+    },
+    entrySummary: {
+      fontSize: 'var(--font-size-body-sm)',
+      color: 'var(--color-text)',
+      marginTop: 'var(--space-2)',
+      lineHeight: 'var(--line-height-body-sm)',
+      maxWidth: '62ch',
+    },
+    highlights: {
+      listStyle: 'none',
+      padding: 0,
+      margin: 'var(--space-2) 0 0 0',
+    },
+    highlightItem: {
+      paddingLeft: 'var(--space-3)',
+      borderLeft: '1px solid var(--color-border)',
+      fontSize: 'var(--font-size-body-sm)',
+      lineHeight: 'var(--line-height-body-sm)',
+      marginBottom: 'var(--space-2)',
+    },
+    skillsLayout: {
+      display: 'grid',
+      gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(12rem, 1fr))',
+      gap: 'var(--space-3)',
+    },
+    skillCategory: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: 'var(--space-2)',
+    },
+    skillName: {
+      fontFamily: 'var(--font-heading)',
+      fontSize: 'var(--font-size-body-sm)',
+      fontWeight: 600,
+      color: 'var(--color-text)',
+    },
+    skillChips: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 'var(--space-1)',
+    },
+    skillChip: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-text-muted)',
+      backgroundColor: 'var(--color-surface-el)',
+      border: '1px solid var(--color-border)',
+      borderRadius: '2px',
+      padding: '2px 6px',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
+    skillChipAccent: {
+      fontFamily: 'var(--font-mono)',
+      fontSize: 'var(--font-size-caption)',
+      color: 'var(--color-accent)',
+      backgroundColor: 'rgba(214, 164, 116, 0.12)',
+      border: '1px solid var(--color-accent)',
+      borderRadius: '2px',
+      padding: '2px 6px',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
+    projectCard: {
+      padding: compact ? 'var(--space-4)' : 'var(--space-5)',
+      backgroundColor: 'var(--color-surface-el)',
+      border: '1px solid var(--color-border)',
+      borderRadius: '12px',
+      marginBottom: 'var(--space-4)',
+      boxShadow: '0 18px 28px -24px rgba(23,23,23,0.18)',
+    },
+    projectHeader: {
+      display: 'grid',
+      gridTemplateColumns: compact ? '1fr' : 'minmax(0, 1fr) auto',
+      gap: 'var(--space-2)',
+      alignItems: 'baseline',
+    },
+    langRow: {
+      display: 'grid',
+      gridTemplateColumns: '1fr auto',
+      gap: 'var(--space-2)',
+      alignItems: 'baseline',
+      fontSize: 'var(--font-size-body-sm)',
+      paddingBottom: 'var(--space-2)',
+      borderBottom: '1px solid var(--color-border)',
+    },
+    langLevel: {
+      color: 'var(--color-text-muted)',
+      fontSize: 'var(--font-size-caption)',
+      fontFamily: 'var(--font-mono)',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
+  }
 }
