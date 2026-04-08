@@ -41,11 +41,16 @@ npm run deploy
 
 ResumeForge deploys to the Cloudflare Pages project `resume-forge`.
 
-Required production secret:
+Required Cloudflare Pages binding:
 
-- `OPENAI_API_KEY`
+- `AI` (Workers AI binding)
 
-If the secret is missing, `/api/parse-resume` will return a configuration error and live AI parsing will fail.
+Optional production environment variables:
+
+- `CF_AI_PARSE_MODEL`
+- `CF_AI_ENHANCE_MODEL`
+
+If the `AI` binding is missing, `/api/parse-resume` and `/api/enhance-resume` will return a configuration error and live AI features will fail.
 
 ## Share Links
 

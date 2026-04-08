@@ -7,12 +7,14 @@ import {
 import {
   checkRateLimit,
   corsHeaders,
-  requestOpenAIWithRetry,
+  extractAIContent,
+  getAIErrorStatus,
+  requestWorkersAIWithRetry,
 } from './parse-resume'
 
 interface Env {
-  OPENAI_API_KEY: string
-  OPENAI_ENHANCE_MODEL?: string
+  AI?: import('./parse-resume').WorkersAIBinding
+  CF_AI_ENHANCE_MODEL?: string
   ENVIRONMENT?: string
 }
 
@@ -22,14 +24,14 @@ interface EnhanceRequest {
   fieldCategory?: FieldCategory | null
 }
 
-interface OpenAIEnhancementResponse {
+interface AIEnhancementResponse {
   summary?: string
   work?: Array<{ index: number; highlights: string[] }>
   projects?: Array<{ index: number; highlights: string[] }>
 }
 
 const enhanceRateLimitStore = new Map<string, { count: number; windowStart: number }>()
-const DEFAULT_ENHANCE_MODEL = 'gpt-4o-mini'
+const DEFAULT_ENHANCE_MODEL = '@cf/qwen/qwen3-30b-a3b-fp8'
 
 function jsonResponse(body: unknown, init: ResponseInit, request: Request, env: Env): Response {
   const headers = new Headers(init.headers)
@@ -48,7 +50,7 @@ function getClientIdentifier(request: Request): string {
   return request.headers.get('cf-connecting-ip') ?? 'unknown-client'
 }
 
-function sanitizePatch(payload: OpenAIEnhancementResponse): ResumeEnhancementPatch {
+function sanitizePatch(payload: AIEnhancementResponse): ResumeEnhancementPatch {
   return {
     summary: payload.summary?.trim(),
     work: (payload.work ?? [])
@@ -93,8 +95,13 @@ export const onRequestOptions: PagesFunction<Env> = async ({ request, env }) => 
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
-  if (!env.OPENAI_API_KEY) {
-    return jsonResponse({ error: 'OpenAI API key not configured' }, { status: 500 }, request, env)
+  if (!env.AI) {
+    return jsonResponse(
+      { error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
+      { status: 500 },
+      request,
+      env,
+    )
   }
 
   const rateLimit = checkRateLimit(getClientIdentifier(request), Date.now(), enhanceRateLimitStore)
@@ -133,11 +140,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 
   const enhancementRequest = buildResumeEnhancementRequest(body.resume, body.meta, body.fieldCategory ?? null)
-  const model = env.OPENAI_ENHANCE_MODEL?.trim() || DEFAULT_ENHANCE_MODEL
+  const model = env.CF_AI_ENHANCE_MODEL?.trim() || DEFAULT_ENHANCE_MODEL
 
   try {
-    const response = await requestOpenAIWithRetry(env.OPENAI_API_KEY, {
-      model,
+    const result = await requestWorkersAIWithRetry(env.AI, model, {
       messages: [
         {
           role: 'system',
@@ -203,13 +209,7 @@ Rules:
       },
     })
 
-    if (!response.ok) {
-      const friendlyError = getEnhancementError(response.status)
-      return jsonResponse({ error: friendlyError.error }, { status: friendlyError.status }, request, env)
-    }
-
-    const openAIResponse = await response.json()
-    const content = openAIResponse.choices?.[0]?.message?.content
+    const content = extractAIContent(result)
 
     if (!content) {
       return jsonResponse(
@@ -220,18 +220,26 @@ Rules:
       )
     }
 
-    const parsed = JSON.parse(content) as OpenAIEnhancementResponse
+    let parsed: AIEnhancementResponse
+    try {
+      parsed = JSON.parse(content) as AIEnhancementResponse
+    } catch {
+      return jsonResponse(
+        { error: 'The resume polish assistant returned an unreadable response.' },
+        { status: 502 },
+        request,
+        env,
+      )
+    }
+
     const data = sanitizePatch(parsed)
 
     return jsonResponse({ data, model }, { status: 200 }, request, env)
   } catch (error) {
+    const friendlyError = getEnhancementError(getAIErrorStatus(error) ?? 502)
     return jsonResponse(
-      {
-        error: error instanceof Error
-          ? error.message
-          : 'The resume polish assistant could not process the request.',
-      },
-      { status: 502 },
+      { error: friendlyError.error },
+      { status: friendlyError.status },
       request,
       env,
     )

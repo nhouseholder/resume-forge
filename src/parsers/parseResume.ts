@@ -13,7 +13,7 @@ const API_URL = '/api/parse-resume'
 /**
  * Full resume parsing pipeline:
  * 1. Client-side text extraction (PDF/DOCX) — lazy-loaded to keep initial bundle small
- * 2. Server-side AI structured parsing (OpenAI)
+ * 2. Server-side AI structured parsing (Cloudflare Workers AI)
  */
 export async function parseResume(file: File): Promise<ParseResult> {
   let rawText: string

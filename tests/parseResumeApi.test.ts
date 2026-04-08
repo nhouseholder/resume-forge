@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import { ResumeDataSchema } from '../src/schemas/resumeSchema'
 import {
   checkRateLimit,
   corsHeaders,
-  requestOpenAIWithRetry,
+  extractAIContent,
+  normalizeParsedResumeData,
+  requestWorkersAIWithRetry,
 } from '../functions/api/parse-resume'
 
 describe('parse-resume API helpers', () => {
@@ -14,7 +17,6 @@ describe('parse-resume API helpers', () => {
     })
 
     const headers = corsHeaders(request, {
-      OPENAI_API_KEY: 'test-key',
       ENVIRONMENT: 'production',
     })
 
@@ -29,28 +31,19 @@ describe('parse-resume API helpers', () => {
     })
 
     const headers = corsHeaders(request, {
-      OPENAI_API_KEY: 'test-key',
       ENVIRONMENT: 'development',
     })
 
     expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:5173')
   })
 
-  it('retries transient OpenAI failures before succeeding', async () => {
-    const fetchImpl = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: 'busy' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ ok: true }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      )
+  it('retries transient Workers AI failures before succeeding', async () => {
+    const ai = {
+      run: vi
+        .fn()
+        .mockRejectedValueOnce(new Error('503 service temporarily unavailable'))
+        .mockResolvedValueOnce({ response: '{"ok":true}' }),
+    }
 
     const waitImpl = vi.fn<(_ms: number) => Promise<void>>().mockResolvedValue(undefined)
     const log = {
@@ -58,40 +51,113 @@ describe('parse-resume API helpers', () => {
       error: vi.fn(),
     }
 
-    const response = await requestOpenAIWithRetry('test-key', { hello: 'world' }, {
-      fetchImpl,
+    const result = await requestWorkersAIWithRetry(ai, '@cf/qwen/qwen3-30b-a3b-fp8', {
+      messages: [{ role: 'user', content: 'hello' }],
+    }, {
       waitImpl,
       log,
     })
 
-    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    expect(ai.run).toHaveBeenCalledTimes(2)
     expect(waitImpl).toHaveBeenCalledTimes(1)
     expect(waitImpl).toHaveBeenCalledWith(200)
-    expect(response.status).toBe(200)
+    expect(result).toEqual({ response: '{"ok":true}' })
   })
 
-  it('does not retry non-retryable OpenAI failures', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ error: 'bad request' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    )
+  it('does not retry non-retryable Workers AI failures', async () => {
+    const ai = {
+      run: vi.fn().mockRejectedValue(new Error('400 invalid request payload')),
+    }
 
     const waitImpl = vi.fn<(_ms: number) => Promise<void>>().mockResolvedValue(undefined)
 
-    const response = await requestOpenAIWithRetry('test-key', { hello: 'world' }, {
-      fetchImpl,
-      waitImpl,
-      log: {
-        warn: vi.fn(),
-        error: vi.fn(),
+    await expect(
+      requestWorkersAIWithRetry(ai, '@cf/qwen/qwen3-30b-a3b-fp8', {
+        messages: [{ role: 'user', content: 'hello' }],
+      }, {
+        waitImpl,
+        log: {
+          warn: vi.fn(),
+          error: vi.fn(),
+        },
+      }),
+    ).rejects.toThrow('400 invalid request payload')
+
+    expect(ai.run).toHaveBeenCalledTimes(1)
+    expect(waitImpl).not.toHaveBeenCalled()
+  })
+
+  it('extracts JSON text from Workers AI response envelopes', () => {
+    expect(extractAIContent({ response: '{"hello":"world"}' })).toBe('{"hello":"world"}')
+    expect(
+      extractAIContent({
+        choices: [{ message: { content: '{"fallback":true}' } }],
+      }),
+    ).toBe('{"fallback":true}')
+  })
+
+  it('normalizes common Workers AI aliases into the app resume schema', () => {
+    const normalized = normalizeParsedResumeData({
+      basics: {
+        name: 'Jane Doe',
+        title: 'Senior Product Designer',
+        email: 'jane@example.com',
+        location: 'Austin, TX',
       },
+      work: [
+        {
+          company: 'Acme Corp',
+          position: 'Senior Product Designer',
+          startDate: '2022-01',
+          endDate: 'present',
+          summary: 'Led onboarding redesign.',
+          highlights: ['Partnered with engineering on design system updates.'],
+        },
+      ],
+      education: [
+        {
+          school: 'University of Texas',
+          degree: 'B.A. Design',
+        },
+      ],
+      skills: ['Figma', 'Design Systems'],
+      presentations: [
+        {
+          title: 'Designing Better Onboarding',
+          event: 'Config',
+        },
+      ],
+      projects: [
+        {
+          name: 'Resume Forge',
+          technologies: ['React', 'TypeScript'],
+        },
+      ],
     })
 
-    expect(fetchImpl).toHaveBeenCalledTimes(1)
-    expect(waitImpl).not.toHaveBeenCalled()
-    expect(response.status).toBe(400)
+    const result = ResumeDataSchema.safeParse(normalized)
+
+    expect(result.success).toBe(true)
+    expect(normalized.basics.label).toBe('Senior Product Designer')
+    expect(normalized.basics.location).toEqual({ city: 'Austin', region: 'TX' })
+    expect(normalized.work[0]).toMatchObject({
+      name: 'Acme Corp',
+      position: 'Senior Product Designer',
+    })
+    expect(normalized.education[0]).toMatchObject({
+      institution: 'University of Texas',
+      studyType: 'B.A. Design',
+    })
+    expect(normalized.skills).toEqual([
+      { name: 'Figma' },
+      { name: 'Design Systems' },
+    ])
+    expect(normalized.presentations?.[0]).toMatchObject({
+      name: 'Designing Better Onboarding',
+      conference: 'Config',
+    })
+    expect(normalized.projects[0].tech).toEqual(['React', 'TypeScript'])
+    expect(normalized.publications).toEqual([])
   })
 
   it('blocks requests that exceed the in-memory parse budget within the active window', () => {

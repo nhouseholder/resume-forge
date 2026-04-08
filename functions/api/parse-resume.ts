@@ -1,13 +1,38 @@
-// Cloudflare Function: AI resume parsing via OpenAI Structured Output
-// Environment variable: OPENAI_API_KEY (set in Cloudflare dashboard)
+import { ResumeDataSchema, type InferredResumeData } from '../../src/schemas/resumeSchema'
+
+// Cloudflare Function: AI resume parsing via Workers AI structured output
+
+export interface WorkersAIBinding {
+  run: (model: string, input: WorkersAIRunInput) => Promise<unknown>
+}
 
 interface Env {
-  OPENAI_API_KEY: string
+  AI?: WorkersAIBinding
+  CF_AI_PARSE_MODEL?: string
   ENVIRONMENT?: string
 }
 
 interface ParseRequest {
   text: string
+}
+
+interface AIMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool'
+  content: string
+}
+
+interface WorkersAIRunInput {
+  messages: AIMessage[]
+  response_format?: {
+    type: 'json_object' | 'json_schema'
+    json_schema?: {
+      name: string
+      strict?: boolean
+      schema: Record<string, unknown>
+    }
+  }
+  temperature?: number
+  max_tokens?: number
 }
 
 // ── CORS ──
@@ -18,9 +43,9 @@ const ALLOWED_ORIGINS = [
   'https://resume-forge-b73.pages.dev',
 ]
 
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-const OPENAI_RETRY_DELAYS_MS = [200, 800]
-const RETRYABLE_OPENAI_STATUS = new Set([429, 500, 502, 503, 504])
+const DEFAULT_PARSE_MODEL = '@cf/qwen/qwen3-30b-a3b-fp8'
+const AI_RETRY_DELAYS_MS = [200, 800]
+const RETRYABLE_AI_STATUS = new Set([408, 429, 500, 502, 503, 504])
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX_REQUESTS = 10
 const rateLimitStore = new Map<string, { count: number; windowStart: number }>()
@@ -81,73 +106,515 @@ function summarizeBody(body: string): string | undefined {
   return normalized ? normalized.slice(0, 240) : undefined
 }
 
-export async function requestOpenAIWithRetry(
-  apiKey: string,
-  payload: unknown,
-  options?: {
-    fetchImpl?: typeof fetch
-    waitImpl?: (ms: number) => Promise<void>
-    log?: LoggerLike
-  },
-): Promise<Response> {
-  const fetchImpl = options?.fetchImpl ?? fetch
-  const waitImpl = options?.waitImpl ?? wait
-  const log = options?.log ?? console
+export function getAIErrorStatus(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null) {
+    if ('status' in error && typeof error.status === 'number') {
+      return error.status
+    }
 
-  for (let attempt = 0; attempt <= OPENAI_RETRY_DELAYS_MS.length; attempt += 1) {
-    try {
-      const response = await fetchImpl(OPENAI_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(payload),
-      })
+    if ('statusCode' in error && typeof error.statusCode === 'number') {
+      return error.statusCode
+    }
 
-      if (response.ok) {
-        return response
+    if ('response' in error && typeof error.response === 'object' && error.response !== null) {
+      const response = error.response as { status?: unknown }
+      if (typeof response.status === 'number') {
+        return response.status
       }
-
-      const responseBody = summarizeBody(await response.clone().text().catch(() => ''))
-      const canRetry = RETRYABLE_OPENAI_STATUS.has(response.status) && attempt < OPENAI_RETRY_DELAYS_MS.length
-
-      if (canRetry) {
-        log.warn('OpenAI request retry scheduled', {
-          attempt: attempt + 1,
-          status: response.status,
-          responseBody,
-        })
-        await waitImpl(OPENAI_RETRY_DELAYS_MS[attempt])
-        continue
-      }
-
-      log.error('OpenAI request failed', {
-        attempt: attempt + 1,
-        status: response.status,
-        responseBody,
-      })
-      return response
-    } catch (error) {
-      const canRetry = attempt < OPENAI_RETRY_DELAYS_MS.length
-      log.warn('OpenAI request threw an exception', {
-        attempt: attempt + 1,
-        canRetry,
-        error: getErrorMessage(error),
-      })
-
-      if (!canRetry) {
-        throw error
-      }
-
-      await waitImpl(OPENAI_RETRY_DELAYS_MS[attempt])
     }
   }
 
-  throw new Error('OpenAI retry loop exited unexpectedly')
+  const message = getErrorMessage(error).toLowerCase()
+  const statusMatch = message.match(/\b(400|401|403|404|408|409|413|422|429|500|502|503|504)\b/)
+  if (statusMatch) {
+    return Number(statusMatch[1])
+  }
+
+  if (message.includes('rate limit') || message.includes('too many requests')) {
+    return 429
+  }
+
+  if (
+    message.includes('temporarily unavailable')
+    || message.includes('service unavailable')
+    || message.includes('overloaded')
+    || message.includes('capacity')
+    || message.includes('timeout')
+    || message.includes('timed out')
+  ) {
+    return 503
+  }
+
+  return undefined
 }
 
-function getUserFacingOpenAIError(status: number): { error: string; status: number } {
+function isRetryableAIError(error: unknown): boolean {
+  const status = getAIErrorStatus(error)
+  if (status !== undefined) {
+    return RETRYABLE_AI_STATUS.has(status)
+  }
+
+  const message = getErrorMessage(error).toLowerCase()
+  return (
+    message.includes('temporarily unavailable')
+    || message.includes('service unavailable')
+    || message.includes('overloaded')
+    || message.includes('capacity')
+    || message.includes('timeout')
+    || message.includes('timed out')
+  )
+}
+
+export async function requestWorkersAIWithRetry(
+  ai: WorkersAIBinding,
+  model: string,
+  payload: WorkersAIRunInput,
+  options?: {
+    waitImpl?: (ms: number) => Promise<void>
+    log?: LoggerLike
+  },
+): Promise<unknown> {
+  const waitImpl = options?.waitImpl ?? wait
+  const log = options?.log ?? console
+
+  for (let attempt = 0; attempt <= AI_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      return await ai.run(model, payload)
+    } catch (error) {
+      const status = getAIErrorStatus(error)
+      const canRetry = isRetryableAIError(error) && attempt < AI_RETRY_DELAYS_MS.length
+
+      if (!canRetry) {
+        log.error('Workers AI request failed', {
+          attempt: attempt + 1,
+          model,
+          status,
+          error: getErrorMessage(error),
+        })
+        throw error
+      }
+
+      log.warn('Workers AI request retry scheduled', {
+        attempt: attempt + 1,
+        model,
+        status,
+        error: getErrorMessage(error),
+      })
+
+      await waitImpl(AI_RETRY_DELAYS_MS[attempt])
+    }
+  }
+
+  throw new Error('Workers AI retry loop exited unexpectedly')
+}
+
+export function extractAIContent(result: unknown): string | undefined {
+  if (typeof result === 'string') {
+    return result
+  }
+
+  if (typeof result !== 'object' || result === null) {
+    return undefined
+  }
+
+  const envelope = result as {
+    response?: unknown
+    result?: unknown
+    choices?: Array<{ message?: { content?: unknown }; text?: unknown }>
+  }
+
+  if (typeof envelope.response === 'string') {
+    return envelope.response
+  }
+
+  if (envelope.result) {
+    return extractAIContent(envelope.result)
+  }
+
+  const firstChoice = envelope.choices?.[0]
+  if (typeof firstChoice?.message?.content === 'string') {
+    return firstChoice.message.content
+  }
+
+  if (typeof firstChoice?.text === 'string') {
+    return firstChoice.text
+  }
+
+  return undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function asString(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const normalized = value.trim()
+  return normalized || undefined
+}
+
+function pickString(record: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = asString(record[key])
+    if (value) {
+      return value
+    }
+  }
+
+  return undefined
+}
+
+function asStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const values = value
+    .map((entry) => asString(entry))
+    .filter((entry): entry is string => Boolean(entry))
+
+  return values.length > 0 ? values : undefined
+}
+
+function normalizeLocation(value: unknown): InferredResumeData['basics']['location'] {
+  if (typeof value === 'string') {
+    const normalized = value.trim()
+    if (!normalized) {
+      return undefined
+    }
+
+    const parts = normalized.split(',').map((part) => part.trim()).filter(Boolean)
+    if (parts.length === 2) {
+      return {
+        city: parts[0],
+        region: parts[1],
+      }
+    }
+
+    return { address: normalized }
+  }
+
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const location = {
+    city: pickString(value, ['city', 'town']),
+    region: pickString(value, ['region', 'state', 'province']),
+    countryCode: pickString(value, ['countryCode', 'country']),
+    address: pickString(value, ['address', 'street', 'line1']),
+    postalCode: pickString(value, ['postalCode', 'zip', 'zipCode']),
+  }
+
+  return Object.values(location).some(Boolean) ? location : undefined
+}
+
+function normalizeProfile(value: unknown): InferredResumeData['basics']['profiles'] {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const profiles = value
+    .map((entry) => {
+      if (!isRecord(entry)) {
+        return undefined
+      }
+
+      const network = pickString(entry, ['network', 'platform', 'name'])
+      if (!network) {
+        return undefined
+      }
+
+      return {
+        network,
+        username: pickString(entry, ['username', 'handle']),
+        url: pickString(entry, ['url', 'link']),
+        icon: pickString(entry, ['icon']),
+      }
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+
+  return profiles.length > 0 ? profiles : undefined
+}
+
+function normalizeObjectArray<T>(
+  value: unknown,
+  mapper: (entry: Record<string, unknown>) => T | undefined,
+): T[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((entry) => (isRecord(entry) ? mapper(entry) : undefined))
+    .filter((entry): entry is T => Boolean(entry))
+}
+
+function maybeArray<T>(value: T[]): T[] | undefined {
+  return value.length > 0 ? value : undefined
+}
+
+function normalizeSkills(value: unknown): InferredResumeData['skills'] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((entry) => {
+      if (typeof entry === 'string') {
+        const name = asString(entry)
+        return name ? { name } : undefined
+      }
+
+      if (!isRecord(entry)) {
+        return undefined
+      }
+
+      const name = pickString(entry, ['name', 'skill'])
+      if (!name) {
+        return undefined
+      }
+
+      return {
+        name,
+        level: pickString(entry, ['level', 'proficiency']),
+        keywords: asStringArray(entry.keywords),
+      }
+    })
+    .filter((entry): entry is InferredResumeData['skills'][number] => Boolean(entry))
+}
+
+export function normalizeParsedResumeData(payload: unknown): InferredResumeData {
+  if (!isRecord(payload)) {
+    throw new Error('The AI parser did not return an object.')
+  }
+
+  const basicsRecord = isRecord(payload.basics) ? payload.basics : {}
+  const normalized = {
+    basics: {
+      name: pickString(basicsRecord, ['name']),
+      label: pickString(basicsRecord, ['label', 'title', 'headline']),
+      email: pickString(basicsRecord, ['email']),
+      phone: pickString(basicsRecord, ['phone']),
+      url: pickString(basicsRecord, ['url', 'website']),
+      summary: pickString(basicsRecord, ['summary', 'about']),
+      location: normalizeLocation(basicsRecord.location),
+      profiles: normalizeProfile(basicsRecord.profiles),
+      photo: pickString(basicsRecord, ['photo', 'image']),
+    },
+    work: normalizeObjectArray(payload.work, (entry) => {
+      const name = pickString(entry, ['name', 'company', 'employer', 'organization'])
+      const position = pickString(entry, ['position', 'title', 'role'])
+
+      if (!name || !position) {
+        return undefined
+      }
+
+      return {
+        name,
+        position,
+        startDate: pickString(entry, ['startDate']),
+        endDate: pickString(entry, ['endDate']),
+        summary: pickString(entry, ['summary', 'description']),
+        highlights: asStringArray(entry.highlights) ?? asStringArray(entry.bullets),
+        url: pickString(entry, ['url', 'website']),
+        location: pickString(entry, ['location']),
+      }
+    }),
+    education: normalizeObjectArray(payload.education, (entry) => {
+      const institution = pickString(entry, ['institution', 'school', 'name'])
+      if (!institution) {
+        return undefined
+      }
+
+      return {
+        institution,
+        area: pickString(entry, ['area', 'field', 'major']),
+        studyType: pickString(entry, ['studyType', 'degree', 'credential']),
+        startDate: pickString(entry, ['startDate']),
+        endDate: pickString(entry, ['endDate']),
+        score: pickString(entry, ['score', 'gpa']),
+        highlights: asStringArray(entry.highlights),
+        url: pickString(entry, ['url', 'website']),
+      }
+    }),
+    skills: normalizeSkills(payload.skills),
+    publications: normalizeObjectArray(payload.publications, (entry) => {
+      const name = pickString(entry, ['name', 'title'])
+      if (!name) {
+        return undefined
+      }
+
+      return {
+        name,
+        publisher: pickString(entry, ['publisher', 'journal']),
+        releaseDate: pickString(entry, ['releaseDate', 'date']),
+        url: pickString(entry, ['url', 'link']),
+        summary: pickString(entry, ['summary', 'description']),
+        doi: pickString(entry, ['doi']),
+        pmid: pickString(entry, ['pmid']),
+        volume: pickString(entry, ['volume']),
+        pages: pickString(entry, ['pages']),
+        type: pickString(entry, ['type']),
+      }
+    }),
+    presentations: normalizeObjectArray(payload.presentations, (entry) => {
+      const name = pickString(entry, ['name', 'title'])
+      const conference = pickString(entry, ['conference', 'event'])
+
+      if (!name || !conference) {
+        return undefined
+      }
+
+      return {
+        name,
+        conference,
+        date: pickString(entry, ['date']),
+        location: pickString(entry, ['location']),
+        type: pickString(entry, ['type']),
+        summary: pickString(entry, ['summary', 'description']),
+        url: pickString(entry, ['url', 'link']),
+      }
+    }),
+    projects: normalizeObjectArray(payload.projects, (entry) => {
+      const name = pickString(entry, ['name', 'title'])
+      if (!name) {
+        return undefined
+      }
+
+      return {
+        name,
+        description: pickString(entry, ['description', 'summary']),
+        url: pickString(entry, ['url', 'link']),
+        tech: asStringArray(entry.tech) ?? asStringArray(entry.technologies),
+        startDate: pickString(entry, ['startDate']),
+        endDate: pickString(entry, ['endDate']),
+        highlights: asStringArray(entry.highlights),
+        images: asStringArray(entry.images),
+      }
+    }),
+    researchThreads: maybeArray(
+      normalizeObjectArray(payload.researchThreads, (entry) => {
+        const name = pickString(entry, ['name'])
+        const summary = pickString(entry, ['summary', 'description'])
+
+        if (!name || !summary) {
+          return undefined
+        }
+
+        return {
+          name,
+          summary,
+          keywords: asStringArray(entry.keywords) ?? [],
+          publications: asStringArray(entry.publications),
+          presentations: asStringArray(entry.presentations),
+        }
+      }),
+    ),
+    leadership: maybeArray(
+      normalizeObjectArray(payload.leadership, (entry) => {
+        const organization = pickString(entry, ['organization', 'name'])
+        const role = pickString(entry, ['role', 'position', 'title'])
+
+        if (!organization || !role) {
+          return undefined
+        }
+
+        return {
+          organization,
+          role,
+          startDate: pickString(entry, ['startDate']),
+          endDate: pickString(entry, ['endDate']),
+          summary: pickString(entry, ['summary', 'description']),
+          highlights: asStringArray(entry.highlights),
+          url: pickString(entry, ['url', 'website']),
+        }
+      }),
+    ),
+    volunteer: maybeArray(
+      normalizeObjectArray(payload.volunteer, (entry) => {
+        const organization = pickString(entry, ['organization', 'name'])
+        const position = pickString(entry, ['position', 'role', 'title'])
+
+        if (!organization || !position) {
+          return undefined
+        }
+
+        return {
+          organization,
+          position,
+          startDate: pickString(entry, ['startDate']),
+          endDate: pickString(entry, ['endDate']),
+          summary: pickString(entry, ['summary', 'description']),
+          highlights: asStringArray(entry.highlights),
+          url: pickString(entry, ['url', 'website']),
+        }
+      }),
+    ),
+    awards: maybeArray(
+      normalizeObjectArray(payload.awards, (entry) => {
+        const title = pickString(entry, ['title', 'name'])
+        if (!title) {
+          return undefined
+        }
+
+        return {
+          title,
+          date: pickString(entry, ['date']),
+          awarder: pickString(entry, ['awarder', 'issuer']),
+          summary: pickString(entry, ['summary', 'description']),
+          url: pickString(entry, ['url', 'website']),
+        }
+      }),
+    ),
+    interests: maybeArray(
+      normalizeObjectArray(payload.interests, (entry) => {
+        const name = pickString(entry, ['name'])
+        if (!name) {
+          return undefined
+        }
+
+        return {
+          name,
+          keywords: asStringArray(entry.keywords),
+        }
+      }),
+    ),
+    references: maybeArray(
+      normalizeObjectArray(payload.references, (entry) => {
+        const name = pickString(entry, ['name'])
+        if (!name) {
+          return undefined
+        }
+
+        return {
+          name,
+          reference: pickString(entry, ['reference', 'summary']),
+        }
+      }),
+    ),
+  }
+
+  if (!normalized.basics.name) {
+    throw new Error('The AI parser did not return a candidate name.')
+  }
+
+  const validation = ResumeDataSchema.safeParse(normalized)
+  if (!validation.success) {
+    const summary = validation.error.issues
+      .slice(0, 3)
+      .map((issue) => `${issue.path.join('.') || 'root'}: ${issue.message}`)
+      .join('; ')
+    throw new Error(`The AI parser returned an invalid resume shape. ${summary}`)
+  }
+
+  return validation.data
+}
+
+function getUserFacingAIError(status: number | undefined): { error: string; status: number } {
   if (status === 429) {
     return {
       error: 'The AI parser is temporarily busy. Please wait a moment and try again.',
@@ -155,7 +622,7 @@ function getUserFacingOpenAIError(status: number): { error: string; status: numb
     }
   }
 
-  if (status >= 500) {
+  if (status !== undefined && status >= 500) {
     return {
       error: 'The AI parsing service is temporarily unavailable. Please try again shortly.',
       status: 502,
@@ -213,9 +680,13 @@ export const onRequestOptions: PagesFunction<Env> = async ({ request, env }) => 
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
-  // Validate API key
-  if (!env.OPENAI_API_KEY) {
-    return jsonResponse({ error: 'OpenAI API key not configured' }, { status: 500 }, request, env)
+  if (!env.AI) {
+    return jsonResponse(
+      { error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
+      { status: 500 },
+      request,
+      env,
+    )
   }
 
   const rateLimit = checkRateLimit(getClientIdentifier(request))
@@ -249,10 +720,11 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return jsonResponse({ error: 'Text too long (max 50,000 characters)' }, { status: 400 }, request, env)
   }
 
-  // Call OpenAI with structured output
+  const model = env.CF_AI_PARSE_MODEL?.trim() || DEFAULT_PARSE_MODEL
+
+  // Call Workers AI with structured output
   try {
-    const response = await requestOpenAIWithRetry(env.OPENAI_API_KEY, {
-        model: 'gpt-4o-mini',
+    const result = await requestWorkersAIWithRetry(env.AI, model, {
         messages: [
           {
             role: 'system',
@@ -489,17 +961,12 @@ Rules:
         max_tokens: 4000,
     })
 
-    if (!response.ok) {
-      const errorResponse = getUserFacingOpenAIError(response.status)
-      return jsonResponse({ error: errorResponse.error }, { status: errorResponse.status }, request, env)
-    }
-
-    const result = await response.json()
-    const content = result.choices?.[0]?.message?.content
+    const content = extractAIContent(result)
 
     if (!content) {
-      console.error('OpenAI response missing content', {
+      console.error('Workers AI response missing content', {
         requestId: request.headers.get('cf-ray') ?? 'unknown',
+        model,
       })
       return jsonResponse({ error: 'The AI parser returned an empty response. Please try again.' }, { status: 502 }, request, env)
     }
@@ -508,18 +975,24 @@ Rules:
     try {
       parsed = JSON.parse(content)
     } catch {
-      console.error('OpenAI response content was not valid JSON', {
+      console.error('Workers AI response content was not valid JSON', {
         requestId: request.headers.get('cf-ray') ?? 'unknown',
+        model,
+        contentPreview: summarizeBody(content),
       })
       return jsonResponse({ error: 'The AI parser returned an unreadable response. Please try again.' }, { status: 502 }, request, env)
     }
 
-    return jsonResponse({ data: parsed }, { status: 200 }, request, env)
+    const normalized = normalizeParsedResumeData(parsed)
+
+    return jsonResponse({ data: normalized }, { status: 200 }, request, env)
   } catch (err) {
-    console.error('Parse error', {
+    const errorResponse = getUserFacingAIError(getAIErrorStatus(err))
+    console.error('Workers AI parse error', {
       requestId: request.headers.get('cf-ray') ?? 'unknown',
+      model,
       error: getErrorMessage(err),
     })
-    return jsonResponse({ error: 'Internal server error' }, { status: 500 }, request, env)
+    return jsonResponse({ error: errorResponse.error }, { status: errorResponse.status }, request, env)
   }
 }
