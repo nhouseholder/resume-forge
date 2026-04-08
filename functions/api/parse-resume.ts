@@ -614,6 +614,93 @@ export function normalizeParsedResumeData(payload: unknown): InferredResumeData 
   return validation.data
 }
 
+function parseAIResumeResponse(result: unknown, requestId: string, model: string): InferredResumeData {
+  const content = extractAIContent(result)
+
+  if (!content) {
+    console.error('Workers AI response missing content', {
+      requestId,
+      model,
+    })
+    throw new Error('The AI parser returned an empty response.')
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(content)
+  } catch {
+    console.error('Workers AI response content was not valid JSON', {
+      requestId,
+      model,
+      contentPreview: summarizeBody(content),
+    })
+    throw new Error('The AI parser returned an unreadable response.')
+  }
+
+  return normalizeParsedResumeData(parsed)
+}
+
+function buildFallbackParsePayload(text: string): WorkersAIRunInput {
+  return {
+    messages: [
+      {
+        role: 'system',
+        content: `You are an expert resume parser.
+
+Return only valid JSON.
+
+Use this exact top-level structure when data exists:
+- basics
+- work
+- education
+- skills
+- publications
+- presentations
+- projects
+- volunteer
+- awards
+- certifications
+- languages
+- interests
+- references
+- researchThreads
+
+Use these field names when possible:
+- basics.name, basics.label, basics.email, basics.phone, basics.url, basics.summary
+- basics.location.city, basics.location.region, basics.location.countryCode
+- work[].name, work[].position, work[].startDate, work[].endDate, work[].summary, work[].highlights
+- education[].institution, education[].studyType, education[].area
+- skills[].name, skills[].level, skills[].keywords
+- publications[].name, publications[].publisher, publications[].releaseDate
+- presentations[].name, presentations[].conference, presentations[].date
+- projects[].name, projects[].description, projects[].tech
+
+Rules:
+- Do not invent facts.
+- Preserve the resume wording as closely as possible.
+- Convert dates to YYYY-MM when possible.
+- Prefer arrays for multi-item sections.
+- If a section is absent, omit it or return an empty array.
+- No markdown, no commentary, JSON only.`,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+    response_format: {
+      type: 'json_object',
+    },
+    temperature: 0.1,
+    max_tokens: 4000,
+  }
+}
+
+export function shouldFallbackParseMode(error: unknown): boolean {
+  const status = getAIErrorStatus(error)
+  return status === undefined || (status !== 429 && status < 500)
+}
+
 function getUserFacingAIError(status: number | undefined): { error: string; status: number } {
   if (status === 429) {
     return {
@@ -721,6 +808,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 
   const model = env.CF_AI_PARSE_MODEL?.trim() || DEFAULT_PARSE_MODEL
+  const requestId = request.headers.get('cf-ray') ?? 'unknown'
 
   // Call Workers AI with structured output
   try {
@@ -961,35 +1049,36 @@ Rules:
         max_tokens: 4000,
     })
 
-    const content = extractAIContent(result)
-
-    if (!content) {
-      console.error('Workers AI response missing content', {
-        requestId: request.headers.get('cf-ray') ?? 'unknown',
-        model,
-      })
-      return jsonResponse({ error: 'The AI parser returned an empty response. Please try again.' }, { status: 502 }, request, env)
-    }
-
-    let parsed: unknown
-    try {
-      parsed = JSON.parse(content)
-    } catch {
-      console.error('Workers AI response content was not valid JSON', {
-        requestId: request.headers.get('cf-ray') ?? 'unknown',
-        model,
-        contentPreview: summarizeBody(content),
-      })
-      return jsonResponse({ error: 'The AI parser returned an unreadable response. Please try again.' }, { status: 502 }, request, env)
-    }
-
-    const normalized = normalizeParsedResumeData(parsed)
+    const normalized = parseAIResumeResponse(result, requestId, model)
 
     return jsonResponse({ data: normalized }, { status: 200 }, request, env)
   } catch (err) {
+    if (shouldFallbackParseMode(err)) {
+      console.warn('Workers AI structured parse failed, retrying with json_object fallback', {
+        requestId,
+        model,
+        error: getErrorMessage(err),
+      })
+
+      try {
+        const fallbackResult = await requestWorkersAIWithRetry(env.AI, model, buildFallbackParsePayload(body.text))
+        const normalized = parseAIResumeResponse(fallbackResult, requestId, model)
+
+        return jsonResponse({ data: normalized }, { status: 200 }, request, env)
+      } catch (fallbackErr) {
+        const fallbackResponse = getUserFacingAIError(getAIErrorStatus(fallbackErr))
+        console.error('Workers AI parse fallback error', {
+          requestId,
+          model,
+          error: getErrorMessage(fallbackErr),
+        })
+        return jsonResponse({ error: fallbackResponse.error }, { status: fallbackResponse.status }, request, env)
+      }
+    }
+
     const errorResponse = getUserFacingAIError(getAIErrorStatus(err))
     console.error('Workers AI parse error', {
-      requestId: request.headers.get('cf-ray') ?? 'unknown',
+      requestId,
       model,
       error: getErrorMessage(err),
     })

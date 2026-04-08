@@ -6,6 +6,7 @@ import {
   extractAIContent,
   normalizeParsedResumeData,
   requestWorkersAIWithRetry,
+  shouldFallbackParseMode,
 } from '../functions/api/parse-resume'
 
 describe('parse-resume API helpers', () => {
@@ -158,6 +159,13 @@ describe('parse-resume API helpers', () => {
     })
     expect(normalized.projects[0].tech).toEqual(['React', 'TypeScript'])
     expect(normalized.publications).toEqual([])
+  })
+
+  it('only falls back to json-object parse mode for non-capacity failures', () => {
+    expect(shouldFallbackParseMode(new Error('invalid response format schema'))).toBe(true)
+    expect(shouldFallbackParseMode(new Error('400 invalid request payload'))).toBe(true)
+    expect(shouldFallbackParseMode(new Error('429 rate limit exceeded'))).toBe(false)
+    expect(shouldFallbackParseMode(new Error('503 service unavailable'))).toBe(false)
   })
 
   it('blocks requests that exceed the in-memory parse budget within the active window', () => {
