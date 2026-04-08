@@ -49,34 +49,44 @@ export default function BuilderPage() {
     setParsing(true)
     setError(null)
 
-    const result = await parseResume(file)
+    try {
+      const result = await parseResume(file)
 
-    setParsing(false)
+      if (result.success && result.data) {
+        // Detect field and apply design defaults
+        const category = detectFieldCategory(result.data)
+        const metaWithDefaults = applyFieldDefaults(
+          result.data.meta ?? {
+            templateId: 'meridian',
+            palette: 'deep-navy',
+            fontPairing: 'editorial-classic',
+            layoutDensity: 'balanced',
+            darkMode: false,
+            sectionVisibility: {},
+          },
+          category,
+        )
+        result.data.meta = metaWithDefaults
 
-    if (result.success && result.data) {
-      // Detect field and apply design defaults
-      const category = detectFieldCategory(result.data)
-      const metaWithDefaults = applyFieldDefaults(
-        result.data.meta ?? {
-          templateId: 'meridian',
-          palette: 'deep-navy',
-          fontPairing: 'editorial-classic',
-          layoutDensity: 'balanced',
-          darkMode: false,
-          sectionVisibility: {},
-        },
-        category,
-      )
-      result.data.meta = metaWithDefaults
+        detectField(category)
+        setResume(result.data)
+        if (result.rawText) setRawText(result.rawText)
+        setStep('editor')
+        return
+      }
 
-      detectField(category)
-      setResume(result.data)
-      if (result.rawText) setRawText(result.rawText)
-      setStep('editor')
-    } else {
       setError(result.error || 'Parsing failed. Try again.')
       setStep('error')
       if (result.rawText) setRawText(result.rawText)
+    } catch (error) {
+      console.error('Unexpected resume parsing failure', {
+        fileName: file.name,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      setError('We hit an unexpected problem while preparing that file. Try again or start with a blank draft.')
+      setStep('error')
+    } finally {
+      setParsing(false)
     }
   }
 

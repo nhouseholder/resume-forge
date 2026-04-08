@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist'
 
-// Configure worker — use CDN for the worker file (avoids bundling issues)
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+// Bundle the PDF.js worker with the app so uploads do not depend on an external CDN.
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
 export interface ExtractedText {
   text: string

@@ -16,21 +16,34 @@ const API_URL = '/api/parse-resume'
  * 2. Server-side AI structured parsing (Cloudflare Workers AI)
  */
 export async function parseResume(file: File): Promise<ParseResult> {
-  let rawText: string
   const ext = file.name.split('.').pop()?.toLowerCase()
+  let rawText = ''
 
-  if (ext === 'pdf') {
-    const { extractPdfText } = await import('./pdfParser')
-    const result = await extractPdfText(file)
-    rawText = result.text
-  } else if (ext === 'docx' || ext === 'doc') {
-    const { extractDocxText } = await import('./docxParser')
-    const result = await extractDocxText(file)
-    rawText = result.text
-  } else {
+  try {
+    if (ext === 'pdf') {
+      const { extractPdfText } = await import('./pdfParser')
+      const result = await extractPdfText(file)
+      rawText = result.text
+    } else if (ext === 'docx' || ext === 'doc') {
+      const { extractDocxText } = await import('./docxParser')
+      const result = await extractDocxText(file)
+      rawText = result.text
+    } else {
+      return {
+        success: false,
+        error: `Unsupported file type: .${ext}. Please upload a PDF or DOCX file.`,
+      }
+    }
+  } catch (error) {
+    console.error('parseResume text extraction failed', {
+      fileName: file.name,
+      fileType: ext,
+      error: error instanceof Error ? error.message : String(error),
+    })
+
     return {
       success: false,
-      error: `Unsupported file type: .${ext}. Please upload a PDF or DOCX file.`,
+      error: 'We could not read text from that file. Try a text-based PDF or DOCX, or start with a blank draft.',
     }
   }
 
