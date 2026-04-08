@@ -33,7 +33,7 @@ export default function MeridianTemplate({ data }: TemplateProps) {
           {basics.phone && <span style={styles.contactItem}>{basics.phone}</span>}
           {basics.url && <span style={styles.contactItem}>{basics.url}</span>}
           {basics.profiles?.map((p, i) => (
-            <span key={i} style={styles.contactItem}>{p.network}: {p.username}</span>
+            <span key={i} style={styles.contactItem}>{p.network}: {p.username ?? p.url ?? ''}</span>
           ))}
         </div>
       </header>

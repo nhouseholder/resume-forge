@@ -6,8 +6,35 @@ import { parseResume } from '@/parsers/parseResume'
 import { ResumeEditor } from '@/components/editor/ResumeEditor'
 import { detectFieldCategory } from '@/utils/fieldDetector'
 import { applyFieldDefaults } from '@/utils/fieldDefaults'
+import { TEMPLATE_REGISTRY } from '@/components/templates/templateConfig'
+import type { ResumeData } from '@/types/resume'
 
 type Step = 'upload' | 'parsing' | 'editor' | 'error'
+
+function createBlankResume(): ResumeData {
+  const meta = applyFieldDefaults(
+    {
+      templateId: 'meridian',
+      palette: 'deep-navy',
+      fontPairing: 'editorial-classic',
+      layoutDensity: 'balanced',
+      darkMode: false,
+      sectionVisibility: {},
+    },
+    'business',
+  )
+
+  return {
+    basics: { name: '' },
+    work: [],
+    education: [],
+    skills: [],
+    publications: [],
+    presentations: [],
+    projects: [],
+    meta,
+  }
+}
 
 export default function BuilderPage() {
   const navigate = useNavigate()
@@ -59,22 +86,36 @@ export default function BuilderPage() {
     setFileName(null)
   }
 
+  const handleManualStart = () => {
+    detectField('business')
+    setResume(createBlankResume())
+    setError(null)
+    setStep('editor')
+  }
+
   // If resume exists, show the editor
   if (resume && step === 'editor') {
+    const activeTemplate = TEMPLATE_REGISTRY.find((template) => template.id === useResumeStore.getState().meta.templateId)
+
     return (
-      <div className="min-h-screen flex flex-col">
-        <header className="border-b border-border/60 bg-surface/90 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="shell-page min-h-screen flex flex-col">
+        <header className="border-b border-border/60 bg-surface/85 backdrop-blur-xl">
+          <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 lg:px-8">
             <button
               onClick={() => navigate('/')}
-              className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface hover:text-primary-600 transition-colors duration-[var(--duration-normal)]"
+              className="text-left transition-colors duration-[var(--duration-normal)] hover:text-primary-600"
             >
-              Resume<span className="text-primary-600 italic">Forge</span>
-            </button>
-            <div className="flex items-center gap-3">
-              <span className="text-[var(--font-size-body-sm)] text-on-surface-muted hidden sm:inline">
-                {resume.basics?.name}
+              <span className="shell-kicker block">Resume Studio</span>
+              <span className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface">
+                Resume<span className="text-primary-600 italic">Forge</span>
               </span>
+            </button>
+            <div className="hidden items-center gap-2 lg:flex">
+              <span className="shell-chip">{resume.basics?.name || 'Untitled candidate'}</span>
+              {activeTemplate && <span className="shell-chip">{activeTemplate.name}</span>}
+              <span className="shell-chip">Saved locally</span>
+            </div>
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => {
                   if (window.confirm('Start a new resume? Your current work will be lost.')) {
@@ -82,11 +123,9 @@ export default function BuilderPage() {
                     setStep('upload')
                   }
                 }}
-                className="px-3 py-1 rounded-md text-[var(--font-size-body-sm)] font-medium text-on-surface-muted
-                  border border-border hover:bg-neutral-100 hover:text-on-surface
-                  transition-all duration-[var(--duration-fast)]"
+                className="rounded-full border border-border bg-white/70 px-4 py-2 text-[var(--font-size-body-sm)] font-semibold text-on-surface-muted transition-all duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:bg-white hover:text-on-surface"
               >
-                New resume
+                Start over
               </button>
             </div>
           </div>
@@ -97,24 +136,28 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border/60 bg-surface/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center">
+    <div className="shell-page min-h-screen flex flex-col">
+      <header className="border-b border-border/60 bg-surface/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 lg:px-8">
           <button
             onClick={() => navigate('/')}
-            className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface hover:text-primary-600 transition-colors duration-[var(--duration-normal)]"
+            className="text-left transition-colors duration-[var(--duration-normal)] hover:text-primary-600"
           >
-            Resume<span className="text-primary-600 italic">Forge</span>
+            <span className="shell-kicker block">Resume Studio</span>
+            <span className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface">
+              Resume<span className="text-primary-600 italic">Forge</span>
+            </span>
           </button>
+          <span className="hidden text-[var(--font-size-body-sm)] text-on-surface-muted md:inline">
+            Upload once, refine fast, publish a document worth sending.
+          </span>
         </div>
       </header>
 
-      {/* Main */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
+      <main className="flex-1 px-6 py-10 lg:px-8 lg:py-14">
         {step === 'upload' && <UploadState onFile={handleFile} />}
         {step === 'parsing' && <ParsingState fileName={fileName} />}
-        {step === 'error' && <ErrorState error={error} onRetry={handleReset} />}
+        {step === 'error' && <ErrorState error={error} onRetry={handleReset} onManualStart={handleManualStart} />}
       </main>
     </div>
   )
@@ -122,54 +165,123 @@ export default function BuilderPage() {
 
 function UploadState({ onFile }: { onFile: (file: File) => void }) {
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="text-center">
-        <h1 className="text-[var(--font-size-h1)] font-display text-on-surface leading-[1.15]">
-          Build your resume
-        </h1>
-        <p className="text-[var(--font-size-body)] text-on-surface-muted mt-4 max-w-md leading-[1.7]">
-          Upload your resume and we'll turn it into a stunning digital document.
-          AI-powered parsing extracts every detail automatically.
-        </p>
+    <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.02fr)_22rem] lg:items-start">
+      <div className="shell-panel p-6 sm:p-8 lg:p-10">
+        <div className="editor-section-header max-w-2xl">
+          <span className="shell-kicker">Start with the document you already have</span>
+          <h1 className="text-[var(--font-size-h1)] text-on-surface">Upload a resume and move straight into the editing studio.</h1>
+          <p className="editor-note max-w-xl">
+            ResumeForge reads the file locally first, sends extracted text to the parser, applies the right defaults for the field it detects, and keeps the live document visible on larger screens while you refine it.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <UploadZone onFile={onFile} />
+        </div>
       </div>
-      <UploadZone onFile={onFile} />
+
+      <aside className="shell-panel p-6">
+        <p className="shell-kicker">What happens next</p>
+        <div className="mt-4 space-y-5">
+          <AsideStep
+            step="01"
+            title="Parse the structure"
+            text="Text is extracted from the file first, then structured into editable sections like experience, education, projects, and supporting detail."
+          />
+          <AsideStep
+            step="02"
+            title="Refine the voice"
+            text="Edit section by section, compare AI wording suggestions, and keep the resume preview on screen on larger layouts or one tap away on smaller ones."
+          />
+          <AsideStep
+            step="03"
+            title="Publish the artifact"
+            text="Choose the template voice, adjust palette and density, then create a share link or print-ready PDF."
+          />
+        </div>
+      </aside>
     </div>
   )
 }
 
 function ParsingState({ fileName }: { fileName: string | null }) {
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="w-10 h-10 rounded-full border-[3px] border-neutral-200 border-t-primary-600 animate-spin" />
-      <div className="text-center">
-        <p className="text-[var(--font-size-body)] font-medium text-on-surface">Analyzing your resume</p>
-        <p className="text-[var(--font-size-body-sm)] text-on-surface-muted mt-1">{fileName}</p>
+    <div className="mx-auto w-full max-w-3xl shell-panel p-8 sm:p-10">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="shell-kicker">Parsing in progress</p>
+          <h1 className="mt-3 text-[var(--font-size-h2)] text-on-surface">Building your editing workspace</h1>
+          <p className="mt-3 max-w-xl text-[var(--font-size-body)] leading-7 text-on-surface-muted">
+            We’re extracting the core sections from {fileName ?? 'your resume'} so you land in a structured editor instead of a blank form.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4 rounded-[24px] border border-border/70 bg-white/80 px-5 py-4">
+          <div className="h-11 w-11 rounded-full border-[3px] border-primary-100 border-t-primary-600 animate-spin" />
+          <div>
+            <p className="text-[var(--font-size-body-sm)] font-semibold text-on-surface">Reading file</p>
+            <p className="text-[var(--font-size-caption)] text-on-surface-muted">Extracting sections and defaults</p>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function ErrorState({ error, onRetry }: { error: string | null; onRetry: () => void }) {
+function ErrorState({
+  error,
+  onRetry,
+  onManualStart,
+}: {
+  error: string | null
+  onRetry: () => void
+  onManualStart: () => void
+}) {
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
-        <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <div className="mx-auto w-full max-w-2xl shell-panel p-8 sm:p-10">
+      <div className="flex flex-col gap-6">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-100">
+          <svg className="h-7 w-7 text-primary-700" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
         </svg>
+        </div>
+
+        <div className="max-w-xl">
+          <p className="shell-kicker">Resume intake issue</p>
+          <h2 className="mt-3 text-[var(--font-size-h2)] text-on-surface">We couldn’t build the draft from that file yet.</h2>
+          <p className="mt-4 text-[var(--font-size-body)] leading-7 text-on-surface-muted">{error}</p>
+          <p className="mt-3 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
+            Try the file again, export a cleaner PDF or DOCX, or continue in a blank editor and rebuild the resume manually.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-[var(--font-size-body)] font-semibold text-white transition-all duration-[var(--duration-normal)] hover:-translate-y-0.5 hover:bg-primary-700"
+          >
+            Try another file
+          </button>
+          <button
+            type="button"
+            onClick={onManualStart}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-white/80 px-6 py-3 text-[var(--font-size-body)] font-semibold text-on-surface transition-all duration-[var(--duration-normal)] hover:-translate-y-0.5 hover:bg-white"
+          >
+            Start blank editor
+          </button>
+        </div>
       </div>
-      <div className="text-center max-w-md">
-        <h2 className="text-[var(--font-size-h3)] font-display text-on-surface">Something went wrong</h2>
-        <p className="text-[var(--font-size-body-sm)] text-on-surface-muted mt-3 leading-relaxed">{error}</p>
-      </div>
-      <button
-        onClick={onRetry}
-        className="px-6 py-2.5 rounded-lg bg-primary-600 text-white font-medium text-[var(--font-size-body)]
-          transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-quart)]
-          hover:bg-primary-700 active:scale-[0.98]
-          focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
-      >
-        Try again
-      </button>
+    </div>
+  )
+}
+
+function AsideStep({ step, title, text }: { step: string; title: string; text: string }) {
+  return (
+    <div className="border-t border-border/70 pt-4 first:border-t-0 first:pt-0">
+      <p className="shell-kicker">{step}</p>
+      <h2 className="mt-2 text-[var(--font-size-h4)] font-semibold text-on-surface">{title}</h2>
+      <p className="mt-2 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">{text}</p>
     </div>
   )
 }

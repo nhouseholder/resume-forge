@@ -79,25 +79,30 @@ export function ListSectionEditor({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[var(--font-size-h2)] font-display text-on-surface">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="shell-kicker">Section editor</p>
+          <h2 className="text-[var(--font-size-h2)] text-on-surface">
           {title}
           <span className="ml-2 text-[var(--font-size-body-sm)] font-body font-normal text-on-surface-muted">
             ({items.length})
           </span>
-        </h2>
+          </h2>
+          <p className="mt-2 max-w-2xl text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
+            Build this section entry by entry. Use highlights for the clearest, outcome-driven lines.
+          </p>
+        </div>
         <button
+          type="button"
           onClick={handleAdd}
-          className="px-4 py-2 rounded-lg text-[var(--font-size-body-sm)] font-medium bg-primary-600 text-white
-            transition-all duration-[var(--duration-fast)] ease-[var(--ease-out-quart)]
-            hover:bg-primary-700 active:scale-[0.97]"
+          className="rounded-full bg-primary-600 px-4 py-2 text-[var(--font-size-body-sm)] font-semibold text-white transition-all duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:bg-primary-700"
         >
           Add entry
         </button>
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg">
+        <div className="editor-empty px-5 py-12 text-center">
           <p className="text-[var(--font-size-body)] text-on-surface-muted">
             No {title.toLowerCase()} yet.
           </p>
@@ -105,9 +110,9 @@ export function ListSectionEditor({
             Add your first entry to get started.
           </p>
           <button
+            type="button"
             onClick={handleAdd}
-            className="mt-4 text-[var(--font-size-body-sm)] text-primary-600 hover:text-primary-700 font-medium
-              transition-colors duration-[var(--duration-fast)]"
+            className="mt-4 rounded-full bg-primary-600 px-4 py-2 text-[var(--font-size-body-sm)] font-semibold text-white transition-all duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:bg-primary-700"
           >
             Add your first {title.toLowerCase().replace(/s$/, '')}
           </button>
@@ -119,9 +124,7 @@ export function ListSectionEditor({
             return (
             <div
               key={index}
-              className="p-5 rounded-lg border border-border bg-surface-elevated
-                hover:shadow-sm
-                transition-shadow duration-[var(--duration-fast)]"
+              className="shell-card p-5"
             >
               {/* Card header */}
               <div className="flex items-center justify-between mb-4">
@@ -129,9 +132,9 @@ export function ListSectionEditor({
                   {getCardTitle(record) || `Entry ${index + 1}`}
                 </h3>
                 <button
+                  type="button"
                   onClick={() => handleRemove(index)}
-                  className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md
-                    transition-colors duration-[var(--duration-fast)]"
+                  className="rounded-full border border-border bg-white/80 p-2 text-neutral-500 transition-all duration-[var(--duration-fast)] hover:border-primary-200 hover:text-primary-700"
                   aria-label="Remove entry"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -147,7 +150,7 @@ export function ListSectionEditor({
                   if (field.type === 'textarea') {
                     return (
                       <div key={field.key} className={mdColSpan(field.key)}>
-                        <label className="block text-[var(--font-size-body-sm)] font-medium text-on-surface-muted mb-1.5">
+                        <label className="editor-label">
                           {field.label}
                         </label>
                         <textarea
@@ -155,16 +158,14 @@ export function ListSectionEditor({
                           onChange={(e) => handleFieldChange(index, field.key, e.target.value)}
                           rows={3}
                           placeholder={field.placeholder}
-                          className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface text-on-surface
-                            text-[var(--font-size-body-sm)] focus:outline-none focus:ring-2 focus:ring-primary-500
-                            resize-y transition-shadow duration-[var(--duration-fast)]"
+                          className="editor-textarea text-[var(--font-size-body-sm)]"
                         />
                       </div>
                     )
                   }
                   return (
                     <div key={field.key}>
-                      <label className="block text-[var(--font-size-body-sm)] font-medium text-on-surface-muted mb-1.5">
+                      <label className="editor-label">
                         {field.label}
                       </label>
                       <input
@@ -172,9 +173,7 @@ export function ListSectionEditor({
                         value={value}
                         onChange={(e) => handleFieldChange(index, field.key, e.target.value)}
                         placeholder={field.placeholder}
-                        className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface text-on-surface
-                          text-[var(--font-size-body-sm)] focus:outline-none focus:ring-2 focus:ring-primary-500
-                          transition-shadow duration-[var(--duration-fast)]"
+                        className="editor-input text-[var(--font-size-body-sm)]"
                       />
                     </div>
                   )
@@ -183,15 +182,15 @@ export function ListSectionEditor({
 
               {/* Highlights */}
               {Array.isArray(record.highlights) && (
-                <div className="mt-5 pt-4 border-t border-border/60">
+                <div className="editor-divider mt-5 pt-4">
                   <div className="flex items-center justify-between mb-3">
-                    <label className="block text-[var(--font-size-body-sm)] font-medium text-on-surface-muted">Highlights</label>
+                    <label className="editor-label mb-0">Highlights</label>
                     <button
+                      type="button"
                       onClick={() => addHighlight(index)}
-                      className="text-[var(--font-size-caption)] text-primary-600 hover:text-primary-700 font-medium
-                        transition-colors duration-[var(--duration-fast)]"
+                      className="rounded-full border border-border bg-white/80 px-3 py-1.5 text-[var(--font-size-caption)] font-semibold text-on-surface transition-all duration-[var(--duration-fast)] hover:border-primary-200 hover:text-primary-700"
                     >
-                      + Add highlight
+                      Add highlight
                     </button>
                   </div>
                   <div className="space-y-2">
@@ -202,14 +201,12 @@ export function ListSectionEditor({
                           value={h}
                           onChange={(e) => handleHighlightChange(index, hi, e.target.value)}
                           placeholder="Achievement or responsibility..."
-                          className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-on-surface
-                            text-[var(--font-size-body-sm)] focus:outline-none focus:ring-2 focus:ring-primary-500
-                            transition-shadow duration-[var(--duration-fast)]"
+                          className="editor-input flex-1 text-[var(--font-size-body-sm)]"
                         />
                         <button
+                          type="button"
                           onClick={() => removeHighlight(index, hi)}
-                          className="p-1 text-neutral-400 hover:text-red-500 rounded-md mt-0.5
-                            transition-colors duration-[var(--duration-fast)]"
+                          className="mt-0.5 rounded-full border border-border bg-white/80 p-2 text-neutral-500 transition-all duration-[var(--duration-fast)] hover:border-primary-200 hover:text-primary-700"
                           aria-label="Remove highlight"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

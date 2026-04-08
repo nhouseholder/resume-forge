@@ -7,41 +7,46 @@ export default function ViewPage() {
   const navigate = useNavigate()
   const { hash } = useParams()
   const result = useMemo(() => decodeSharedResumePayload(hash ?? ''), [hash])
+  const basics = result.ok ? result.payload.resume.basics : null
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-100">
-      <header className="border-b border-border/60 bg-surface/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+    <div className="shell-page min-h-screen flex flex-col">
+      <header className="border-b border-border/60 bg-surface/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-6 lg:px-8">
           <button
             onClick={() => navigate('/')}
-            className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface hover:text-primary-600 transition-colors duration-[var(--duration-normal)]"
+            className="text-left transition-colors duration-[var(--duration-normal)] hover:text-primary-600"
           >
-            Resume<span className="text-primary-600 italic">Forge</span>
+            <span className="shell-kicker block">Published with ResumeForge</span>
+            <span className="text-[var(--font-size-h4)] font-display tracking-tight text-on-surface">
+              Resume<span className="text-primary-600 italic">Forge</span>
+            </span>
           </button>
           <button
             onClick={() => navigate('/builder')}
-            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[var(--font-size-body-sm)] font-medium text-primary-600 transition-colors duration-[var(--duration-fast)] hover:bg-primary-50"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white/70 px-4 py-2 text-[var(--font-size-body-sm)] font-semibold text-on-surface transition-all duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:bg-white"
           >
             Create your own
           </button>
         </div>
       </header>
-      <main className="flex-1 px-4 py-8 lg:px-6 lg:py-10">
+
+      <main className="flex-1 px-4 py-8 lg:px-8 lg:py-12">
         {!result.ok ? (
-          <div className="mx-auto flex max-w-md flex-1 items-center justify-center py-10">
-            <div className="rounded-2xl border border-border/70 bg-white p-8 text-center shadow-sm">
-              <p className="text-[var(--font-size-caption)] font-medium uppercase tracking-[0.12em] text-primary-600">
+          <div className="mx-auto flex max-w-2xl flex-1 items-center justify-center py-10">
+            <div className="shell-panel p-8 text-left sm:p-10">
+              <p className="shell-kicker">
                 Shared Resume
               </p>
-              <h1 className="mt-3 text-[var(--font-size-h2)] font-display text-on-surface">
+              <h1 className="mt-4 text-[var(--font-size-h2)] text-on-surface">
                 Link unavailable
               </h1>
-              <p className="mt-4 text-[var(--font-size-body)] leading-relaxed text-on-surface-muted">
+              <p className="mt-4 max-w-xl text-[var(--font-size-body)] leading-relaxed text-on-surface-muted">
                 {result.error}
               </p>
               <button
                 onClick={() => navigate('/builder')}
-                className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-[var(--font-size-body)] font-semibold text-white transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-quart)] hover:bg-primary-700 hover:shadow-md hover:shadow-primary-600/15 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-[var(--font-size-body)] font-semibold text-white transition-all duration-[var(--duration-normal)] hover:-translate-y-0.5 hover:bg-primary-700"
               >
                 Build your resume
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -52,33 +57,35 @@ export default function ViewPage() {
           </div>
         ) : (
           <>
-            <div className="mx-auto mb-6 flex max-w-6xl flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-[var(--font-size-caption)] font-medium uppercase tracking-[0.12em] text-primary-600">
-                  Shared Resume
-                </p>
-                <h1 className="mt-3 text-[var(--font-size-h2)] font-display text-on-surface">
-                  Read-only resume preview
+            <div className="mx-auto mb-8 grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+              <div className="max-w-3xl">
+                <p className="shell-kicker">Shared resume</p>
+                <h1 className="mt-4 text-[var(--font-size-h1)] text-on-surface">
+                  {basics?.name || 'Candidate'}
+                  {basics?.label ? <span className="block text-[var(--font-size-h3)] italic text-primary-600">{basics.label}</span> : null}
                 </h1>
-                <p className="mt-3 text-[var(--font-size-body)] leading-relaxed text-on-surface-muted">
-                  This link contains a browser-generated snapshot of the resume and its current theme. No account is required to view it.
+                <p className="mt-4 max-w-2xl text-[var(--font-size-body)] leading-relaxed text-on-surface-muted">
+                  This link contains a read-only snapshot of the current resume and its chosen theme. It opens without an account and preserves the exact document styling selected in the editor.
                 </p>
               </div>
-              <div className="text-[var(--font-size-body-sm)] text-on-surface-muted">
-                Shared from ResumeForge
+              <div className="flex flex-wrap items-center gap-2 text-[var(--font-size-body-sm)] text-on-surface-muted">
+                <span className="shell-chip">Read-only link</span>
+                <span className="shell-chip">Built with ResumeForge</span>
               </div>
             </div>
 
-            <div className="mx-auto max-w-6xl overflow-x-auto rounded-[24px] border border-border/70 bg-neutral-200/60 p-4 lg:p-8">
-              <div
-                data-resume-preview
-                className="mx-auto overflow-hidden rounded-lg bg-white shadow-xl print:rounded-none print:shadow-none"
-                style={{ width: '816px', minHeight: '1056px' }}
-              >
-                <TemplateRenderer
-                  data={{ ...result.payload.resume, meta: result.payload.meta }}
-                  meta={result.payload.meta}
-                />
+            <div className="mx-auto max-w-7xl">
+              <div className="workspace-stage overflow-x-auto p-4 sm:p-6 lg:p-10">
+                <div
+                  data-resume-preview
+                  className="workspace-paper mx-auto print:rounded-none print:shadow-none"
+                  style={{ width: '816px', minHeight: '1056px' }}
+                >
+                  <TemplateRenderer
+                    data={{ ...result.payload.resume, meta: result.payload.meta }}
+                    meta={result.payload.meta}
+                  />
+                </div>
               </div>
             </div>
           </>

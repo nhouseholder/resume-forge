@@ -1,82 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
-   ResumeForge Design System — "Editorial Precision"
-   Editorial-inspired aesthetic with warm navy tinted neutrals,
-   serif display + geometric sans pairing, 4pt spacing grid.
+   ResumeForge Design System — "Quiet Authority"
+   Editorial studio shell with warm paper neutrals,
+   oxblood accents, and trusted reading-room contrast.
    ═══════════════════════════════════════════════════════════ */
 
 @theme {
-  /* ── Primary: Deep Navy (hue 250, tinted warm) ── */
-  --color-primary-50: oklch(0.97 0.008 250);
-  --color-primary-100: oklch(0.93 0.016 250);
-  --color-primary-200: oklch(0.85 0.035 250);
-  --color-primary-300: oklch(0.75 0.055 250);
-  --color-primary-400: oklch(0.65 0.090 250);
-  --color-primary-500: oklch(0.55 0.130 250);
-  --color-primary-600: oklch(0.45 0.150 250);
-  --color-primary-700: oklch(0.38 0.130 250);
-  --color-primary-800: oklch(0.30 0.090 250);
-  --color-primary-900: oklch(0.22 0.050 250);
-  --color-primary-950: oklch(0.15 0.030 250);
+  /* ── Primary: Oxblood editorial accent ── */
+  --color-primary-50: oklch(0.975 0.014 24);
+  --color-primary-100: oklch(0.946 0.026 24);
+  --color-primary-200: oklch(0.892 0.050 24);
+  --color-primary-300: oklch(0.808 0.082 24);
+  --color-primary-400: oklch(0.706 0.118 24);
+  --color-primary-500: oklch(0.586 0.142 24);
+  --color-primary-600: oklch(0.486 0.132 24);
+  --color-primary-700: oklch(0.398 0.104 24);
+  --color-primary-800: oklch(0.314 0.076 24);
+  --color-primary-900: oklch(0.248 0.052 24);
+  --color-primary-950: oklch(0.182 0.034 24);
 
-  /* ── Accent: Warm Indigo (hue 290) ── */
-  --color-accent-50: oklch(0.96 0.015 290);
-  --color-accent-100: oklch(0.92 0.030 290);
-  --color-accent-200: oklch(0.84 0.065 290);
-  --color-accent-300: oklch(0.74 0.100 290);
-  --color-accent-400: oklch(0.65 0.150 290);
-  --color-accent-500: oklch(0.58 0.185 290);
-  --color-accent-600: oklch(0.50 0.170 290);
-  --color-accent-700: oklch(0.42 0.130 290);
-  --color-accent-800: oklch(0.35 0.095 290);
-  --color-accent-900: oklch(0.28 0.060 290);
+  /* ── Accent: Brass note for editorial details ── */
+  --color-accent-50: oklch(0.984 0.010 82);
+  --color-accent-100: oklch(0.952 0.022 82);
+  --color-accent-200: oklch(0.903 0.048 82);
+  --color-accent-300: oklch(0.835 0.072 82);
+  --color-accent-400: oklch(0.752 0.096 82);
+  --color-accent-500: oklch(0.658 0.110 82);
+  --color-accent-600: oklch(0.548 0.102 82);
+  --color-accent-700: oklch(0.452 0.084 82);
+  --color-accent-800: oklch(0.364 0.066 82);
+  --color-accent-900: oklch(0.286 0.048 82);
 
-  /* ── Neutrals: Cool-tinted (chroma 0.005-0.008, hue 250) ── */
-  --color-neutral-50: oklch(0.985 0.004 250);
-  --color-neutral-100: oklch(0.955 0.005 250);
-  --color-neutral-200: oklch(0.905 0.007 250);
-  --color-neutral-300: oklch(0.825 0.007 250);
-  --color-neutral-400: oklch(0.705 0.009 250);
-  --color-neutral-500: oklch(0.555 0.009 250);
-  --color-neutral-600: oklch(0.455 0.009 250);
-  --color-neutral-700: oklch(0.375 0.007 250);
-  --color-neutral-800: oklch(0.285 0.007 250);
-  --color-neutral-900: oklch(0.205 0.005 250);
-  --color-neutral-950: oklch(0.135 0.004 250);
+  /* ── Neutrals: Warm paper + ink ── */
+  --color-neutral-50: oklch(0.988 0.006 75);
+  --color-neutral-100: oklch(0.969 0.008 75);
+  --color-neutral-200: oklch(0.928 0.011 75);
+  --color-neutral-300: oklch(0.860 0.014 75);
+  --color-neutral-400: oklch(0.736 0.016 75);
+  --color-neutral-500: oklch(0.588 0.016 75);
+  --color-neutral-600: oklch(0.474 0.015 75);
+  --color-neutral-700: oklch(0.382 0.013 75);
+  --color-neutral-800: oklch(0.284 0.010 75);
+  --color-neutral-900: oklch(0.218 0.008 75);
+  --color-neutral-950: oklch(0.156 0.006 75);
 
   /* ── Semantic surfaces ── */
   --color-surface: var(--color-neutral-50);
-  --color-surface-elevated: oklch(1.0 0 0);
+  --color-surface-elevated: oklch(0.995 0.004 75);
   --color-on-surface: var(--color-neutral-900);
-  --color-on-surface-muted: var(--color-neutral-500);
+  --color-on-surface-muted: var(--color-neutral-600);
   --color-border: var(--color-neutral-200);
 
-  /* ── Typography: Modular scale (3:1 ratio) ── */
-  --font-display: 'Instrument Serif', 'Georgia', serif;
-  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-size-display: clamp(2.75rem, 5.5vw, 4.75rem);
-  --font-size-h1: clamp(2rem, 3.5vw, 3rem);
-  --font-size-h2: clamp(1.5rem, 2.5vw, 2rem);
-  --font-size-h3: clamp(1.25rem, 2vw, 1.5rem);
-  --font-size-h4: 1.25rem;
+  /* ── Typography: Editorial shell hierarchy ── */
+  --font-display: 'Newsreader', 'Georgia', serif;
+  --font-body: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace;
+  --font-size-display: clamp(3.2rem, 7vw, 6rem);
+  --font-size-h1: clamp(2.4rem, 4vw, 3.8rem);
+  --font-size-h2: clamp(1.75rem, 2.8vw, 2.4rem);
+  --font-size-h3: clamp(1.25rem, 1.9vw, 1.55rem);
+  --font-size-h4: 1.15rem;
   --font-size-body: 1rem;
   --font-size-body-sm: 0.875rem;
   --font-size-caption: 0.75rem;
 
-  /* ── Shadows: Subtle, warm ── */
-  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.03), 0 1px 3px oklch(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.03), 0 2px 4px oklch(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.04), 0 4px 6px oklch(0 0 0 / 0.03);
-  --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.05), 0 8px 10px oklch(0 0 0 / 0.03);
+  /* ── Shadows: Reading-room depth ── */
+  --shadow-sm: 0 1px 2px oklch(0.16 0.01 75 / 0.05), 0 2px 4px oklch(0.16 0.01 75 / 0.03);
+  --shadow-md: 0 8px 24px oklch(0.16 0.01 75 / 0.06), 0 3px 10px oklch(0.16 0.01 75 / 0.04);
+  --shadow-lg: 0 18px 44px oklch(0.16 0.01 75 / 0.08), 0 8px 18px oklch(0.16 0.01 75 / 0.05);
+  --shadow-xl: 0 28px 70px oklch(0.16 0.01 75 / 0.10), 0 12px 24px oklch(0.16 0.01 75 / 0.06);
 
   /* ── Motion: 100/300/500 rule ── */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 100ms;
-  --duration-normal: 200ms;
-  --duration-slow: 500ms;
+  --duration-fast: 120ms;
+  --duration-normal: 240ms;
+  --duration-slow: 480ms;
 }
 
 /* ── Dark mode overrides ── */
@@ -101,18 +103,193 @@ body {
   color: var(--color-on-surface);
   background: var(--color-surface);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.55;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-primary-300) 80%, white 20%);
+  color: var(--color-primary-900);
 }
 
 /* ── Display headings use serif ── */
 h1, h2, h3, .font-display {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.15;
+  font-weight: 500;
+  line-height: 1.05;
 }
 
-h1 { letter-spacing: -0.02em; }
-h2 { letter-spacing: -0.01em; }
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.02em; }
+
+.font-mono,
+.shell-kicker,
+.editor-label {
+  font-family: var(--font-mono);
+}
+
+.shell-page {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 0% 0%, oklch(0.96 0.045 30 / 0.55), transparent 28%),
+    radial-gradient(circle at 100% 0%, oklch(0.95 0.035 86 / 0.45), transparent 26%),
+    linear-gradient(180deg, oklch(0.988 0.006 75) 0%, oklch(0.972 0.008 75) 48%, oklch(0.965 0.010 75) 100%);
+}
+
+.shell-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), oklch(0.82 0.02 75 / 0.12) calc(100% - 1px), oklch(0.82 0.02 75 / 0.12) 100%),
+    linear-gradient(180deg, transparent 0, transparent 72%, oklch(0.42 0.03 24 / 0.05) 100%);
+  opacity: 0.7;
+}
+
+.shell-panel {
+  position: relative;
+  border: 1px solid color-mix(in oklab, var(--color-border) 82%, var(--color-primary-200) 18%);
+  border-radius: 28px;
+  background: color-mix(in oklab, var(--color-surface-elevated) 90%, white 10%);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(14px);
+}
+
+.shell-card {
+  border: 1px solid color-mix(in oklab, var(--color-border) 86%, white 14%);
+  border-radius: 22px;
+  background: color-mix(in oklab, white 84%, var(--color-neutral-100) 16%);
+  box-shadow: var(--shadow-md);
+}
+
+.shell-kicker {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-primary-600);
+}
+
+.shell-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 84%, var(--color-primary-200) 16%);
+  background: color-mix(in oklab, white 76%, var(--color-neutral-100) 24%);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.75rem;
+  color: var(--color-on-surface-muted);
+}
+
+.shell-rule {
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-primary-500), transparent);
+}
+
+.workspace-stage {
+  position: relative;
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, var(--color-primary-200) 20%);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, oklch(0.985 0.004 75) 0%, oklch(0.964 0.008 75) 100%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.8), var(--shadow-lg);
+}
+
+.workspace-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, oklch(0.82 0.01 75 / 0.14) 1px, transparent 1px),
+    linear-gradient(oklch(0.82 0.01 75 / 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 85%);
+}
+
+.workspace-paper {
+  border-radius: 22px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 88%, white 12%);
+  background: linear-gradient(180deg, #ffffff 0%, oklch(0.994 0.003 75) 100%);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.editor-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.editor-note {
+  font-size: var(--font-size-body-sm);
+  line-height: 1.6;
+  color: var(--color-on-surface-muted);
+}
+
+.editor-label {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-muted);
+}
+
+.editor-input,
+.editor-select,
+.editor-textarea {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 88%, white 12%);
+  background: color-mix(in oklab, white 80%, var(--color-neutral-100) 20%);
+  padding: 0.8rem 1rem;
+  color: var(--color-on-surface);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.75);
+  transition:
+    border-color var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
+}
+
+.editor-input:hover,
+.editor-select:hover,
+.editor-textarea:hover {
+  border-color: color-mix(in oklab, var(--color-border) 65%, var(--color-primary-300) 35%);
+}
+
+.editor-input:focus,
+.editor-select:focus,
+.editor-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 4px oklch(0.95 0.02 24 / 0.85), inset 0 1px 0 oklch(1 0 0 / 0.85);
+  transform: translateY(-1px);
+}
+
+.editor-textarea {
+  resize: vertical;
+}
+
+.editor-empty {
+  border-radius: 22px;
+  border: 1px dashed color-mix(in oklab, var(--color-border) 78%, var(--color-primary-200) 22%);
+  background:
+    linear-gradient(180deg, oklch(0.992 0.004 75) 0%, oklch(0.978 0.006 75) 100%);
+}
+
+.editor-divider {
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 84%, white 16%);
+}
 
 /* ── Focus: keyboard only, primary ring ── */
 :focus-visible {

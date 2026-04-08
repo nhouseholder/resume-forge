@@ -16,6 +16,7 @@ interface TemplateRendererProps {
  */
 export default function TemplateRenderer({ data, meta }: TemplateRendererProps) {
   const theme = useMemo(() => resolveTheme(meta), [meta])
+  const visibleData = useMemo(() => applySectionVisibility(data, meta), [data, meta])
 
   const Template = useMemo<TemplateComponent | null>(() => {
     const entry = TEMPLATE_REGISTRY.find((t) => t.id === meta.templateId)
@@ -48,10 +49,36 @@ export default function TemplateRenderer({ data, meta }: TemplateRendererProps) 
 
       {/* Scoped template container with CSS custom properties */}
       <div style={{ ...containerBase, ...themeStyle }}>
-        <Template data={data} />
+        <Template data={visibleData} />
       </div>
     </>
   )
+}
+
+function applySectionVisibility(data: ResumeData, meta: ResumeMeta): ResumeData {
+  const isVisible = (key: string) => meta.sectionVisibility[key] ?? true
+
+  return {
+    ...data,
+    basics: {
+      ...data.basics,
+      summary: isVisible('summary') ? data.basics.summary : undefined,
+    },
+    work: isVisible('work') ? data.work : [],
+    education: isVisible('education') ? data.education : [],
+    skills: isVisible('skills') ? data.skills : [],
+    publications: isVisible('publications') ? data.publications : [],
+    presentations: isVisible('presentations') ? data.presentations : [],
+    projects: isVisible('projects') ? data.projects : [],
+    researchThreads: isVisible('researchThreads') ? data.researchThreads : [],
+    leadership: isVisible('leadership') ? data.leadership : [],
+    volunteer: isVisible('volunteer') ? data.volunteer : [],
+    awards: isVisible('awards') ? data.awards : [],
+    interests: isVisible('interests') ? data.interests : [],
+    references: isVisible('references') ? data.references : [],
+    certifications: isVisible('certifications') ? data.certifications : [],
+    languages: isVisible('languages') ? data.languages : [],
+  }
 }
 
 const containerBase: React.CSSProperties = {

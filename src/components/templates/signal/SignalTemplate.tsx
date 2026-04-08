@@ -32,7 +32,7 @@ export default function SignalTemplate({ data }: TemplateProps) {
           {basics.phone && <ContactItem text={basics.phone} />}
           {basics.url && <ContactItem text={basics.url} />}
           {basics.profiles?.map((p, i) => (
-            <ContactItem key={i} text={`${p.network}: ${p.username ?? ''}`} />
+            <ContactItem key={i} text={`${p.network}: ${p.username ?? p.url ?? ''}`} />
           ))}
         </div>
       </header>

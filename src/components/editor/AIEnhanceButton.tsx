@@ -123,12 +123,12 @@ export function AIEnhanceButton() {
   const projectCount = requestPreview.source.projects.length
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white/80 p-4 shadow-sm">
+    <div className="shell-card p-4 sm:p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">AI polish</p>
-          <p className="mt-1 text-sm font-medium text-on-surface">Tighten the summary and strongest bullets without changing the facts.</p>
-          <p className="mt-1 text-xs text-on-surface-muted">
+          <p className="shell-kicker">AI polish</p>
+          <p className="mt-2 text-sm font-semibold text-on-surface">Tighten the summary and strongest bullets without changing the facts.</p>
+          <p className="mt-2 text-xs leading-5 text-on-surface-muted">
             Targets {requestPreview.context.templateName} voice for {requestPreview.context.fieldCategory ?? 'general'} resumes.
             {` ${workCount} work entries and ${projectCount} projects are eligible.`}
           </p>
@@ -138,12 +138,10 @@ export function AIEnhanceButton() {
           type="button"
           onClick={handleEnhance}
           disabled={!canEnhance || isEnhancing}
-          className={`
-            inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150
-            ${!canEnhance || isEnhancing
-              ? 'cursor-not-allowed bg-neutral-200 text-neutral-500'
-              : 'bg-neutral-950 text-white hover:bg-neutral-800 active:scale-[0.99]'}
-          `}
+          className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition-all duration-[var(--duration-fast)] ${!canEnhance || isEnhancing
+            ? 'cursor-not-allowed bg-neutral-200 text-neutral-500'
+            : 'bg-primary-600 text-white hover:-translate-y-0.5 hover:bg-primary-700 active:translate-y-0'
+          }`}
         >
           {isEnhancing ? 'Polishing…' : pendingPatch ? 'Refresh preview' : 'Generate polish preview'}
         </button>
@@ -156,10 +154,10 @@ export function AIEnhanceButton() {
       )}
 
       {preview && (
-        <div className="mt-4 space-y-4 rounded-[1.5rem] border border-neutral-200 bg-[linear-gradient(180deg,rgba(250,247,242,0.92),rgba(255,255,255,0.98))] p-4 shadow-[0_18px_48px_-28px_rgba(23,23,23,0.28)]">
+        <div className="mt-4 space-y-4 rounded-[1.5rem] border border-primary-100 bg-[linear-gradient(180deg,rgba(252,247,241,0.96),rgba(255,255,255,0.98))] p-4 shadow-[0_18px_48px_-28px_rgba(23,23,23,0.24)]">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Review suggested edits</p>
+              <p className="shell-kicker">Review suggested edits</p>
               <p className="mt-1 text-sm text-on-surface-muted">
                 Compare the current phrasing with the AI polish pass before applying it to the resume.
               </p>
@@ -170,7 +168,7 @@ export function AIEnhanceButton() {
                 {preview.totalChanges} change{preview.totalChanges === 1 ? '' : 's'}
               </span>
               {pendingModel && (
-                <span className="rounded-full bg-neutral-950 px-3 py-1 text-white">
+                <span className="rounded-full bg-primary-600 px-3 py-1 text-white">
                   {pendingModel}
                 </span>
               )}
@@ -224,7 +222,7 @@ export function AIEnhanceButton() {
             <button
               type="button"
               onClick={handleApply}
-              className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.99]"
+              className="rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700 active:scale-[0.99]"
             >
               Apply polish
             </button>
