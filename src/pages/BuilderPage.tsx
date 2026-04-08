@@ -11,7 +11,7 @@ type Step = 'upload' | 'parsing' | 'editor' | 'error'
 
 export default function BuilderPage() {
   const navigate = useNavigate()
-  const { resume, setResume, setRawText, setParsing } = useResumeStore()
+  const { resume, setResume, setRawText, setParsing, detectField } = useResumeStore()
   const [step, setStep] = useState<Step>(resume ? 'editor' : 'upload')
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
@@ -42,6 +42,7 @@ export default function BuilderPage() {
       )
       result.data.meta = metaWithDefaults
 
+      detectField(category)
       setResume(result.data)
       if (result.rawText) setRawText(result.rawText)
       setStep('editor')

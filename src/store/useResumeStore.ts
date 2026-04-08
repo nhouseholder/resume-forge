@@ -90,7 +90,16 @@ export const useResumeStore = create<ResumeStore>()(
     (set) => ({
       ...initialState,
 
-      setResume: (resume) => set({ resume, parseError: null }),
+      setResume: (resume) =>
+        set((state) => {
+          const nextMeta = resume?.meta ?? state.meta
+          return {
+            resume,
+            parseError: null,
+            meta: nextMeta,
+            templateId: nextMeta.templateId,
+          }
+        }),
 
       setRawText: (rawText) => set({ rawText }),
 
@@ -110,6 +119,7 @@ export const useResumeStore = create<ResumeStore>()(
 
       updateMeta: (partial) =>
         set((state) => ({
+          templateId: partial.templateId ?? state.templateId,
           meta: { ...state.meta, ...partial },
         })),
 

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { useResumeStore } from '@/store/useResumeStore'
+import { AIEnhanceButton } from './AIEnhanceButton'
 import { SectionNav } from './SectionNav'
 import { BasicsEditor } from './sections/BasicsEditor'
 import { SkillsEditor } from './sections/SkillsEditor'
@@ -116,7 +117,10 @@ export function ResumeEditor() {
           <>
             <SectionNav />
             <div className="flex-1 p-6 lg:p-8 overflow-y-auto max-w-2xl" key={activeSection}>
-              {renderSection()}
+              <div className="space-y-6">
+                <AIEnhanceButton />
+                {renderSection()}
+              </div>
             </div>
           </>
         )}
