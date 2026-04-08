@@ -123,13 +123,13 @@ export function AIEnhanceButton() {
   const projectCount = requestPreview.source.projects.length
 
   return (
-    <div className="shell-card p-4 sm:p-5">
+    <div className="proof-ticket p-4 sm:p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="shell-kicker">AI polish</p>
-          <p className="mt-2 text-sm font-semibold text-on-surface">Tighten the summary and strongest bullets without changing the facts.</p>
+          <p className="shell-kicker">Tracked revision</p>
+          <p className="mt-2 text-sm font-semibold text-on-surface">Prepare a line-edit pass for the summary and strongest bullets without changing the facts.</p>
           <p className="mt-2 text-xs leading-5 text-on-surface-muted">
-            Targets {requestPreview.context.templateName} voice for {requestPreview.context.fieldCategory ?? 'general'} resumes.
+            Uses the {requestPreview.context.templateName} treatment for {requestPreview.context.fieldCategory ?? 'general'} resumes.
             {` ${workCount} work entries and ${projectCount} projects are eligible.`}
           </p>
         </div>
@@ -138,12 +138,12 @@ export function AIEnhanceButton() {
           type="button"
           onClick={handleEnhance}
           disabled={!canEnhance || isEnhancing}
-          className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition-all duration-[var(--duration-fast)] ${!canEnhance || isEnhancing
-            ? 'cursor-not-allowed bg-neutral-200 text-neutral-500'
-            : 'bg-primary-600 text-white hover:-translate-y-0.5 hover:bg-primary-700 active:translate-y-0'
+          className={`desk-button ${!canEnhance || isEnhancing
+            ? 'cursor-not-allowed border-border bg-neutral-200 text-neutral-500'
+            : 'desk-button-primary'
           }`}
         >
-          {isEnhancing ? 'Polishing…' : pendingPatch ? 'Refresh preview' : 'Generate polish preview'}
+          {isEnhancing ? 'Preparing…' : pendingPatch ? 'Refresh revision pass' : 'Prepare line edits'}
         </button>
       </div>
 
@@ -154,21 +154,21 @@ export function AIEnhanceButton() {
       )}
 
       {preview && (
-        <div className="mt-4 space-y-4 rounded-[1.5rem] border border-primary-100 bg-[linear-gradient(180deg,rgba(252,247,241,0.96),rgba(255,255,255,0.98))] p-4 shadow-[0_18px_48px_-28px_rgba(23,23,23,0.24)]">
+        <div className="mt-4 space-y-4 rounded-[10px] border border-primary-200 bg-primary-50/25 p-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="shell-kicker">Review suggested edits</p>
+              <p className="shell-kicker">Review line edits</p>
               <p className="mt-1 text-sm text-on-surface-muted">
-                Compare the current phrasing with the AI polish pass before applying it to the resume.
+                Compare the current phrasing with the revision pass before applying it to the page.
               </p>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-on-surface-muted">
-              <span className="rounded-full bg-white px-3 py-1 ring-1 ring-neutral-200">
+              <span className="font-mono uppercase tracking-[0.14em] text-on-surface-muted">
                 {preview.totalChanges} change{preview.totalChanges === 1 ? '' : 's'}
               </span>
               {pendingModel && (
-                <span className="rounded-full bg-primary-600 px-3 py-1 text-white">
+                <span className="font-mono uppercase tracking-[0.14em] text-primary-700">
                   {pendingModel}
                 </span>
               )}
@@ -185,7 +185,7 @@ export function AIEnhanceButton() {
 
           {preview.work.length > 0 && (
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Work Experience</p>
+              <p className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-on-surface-muted">Work Experience</p>
               {preview.work.map((entry) => (
                 <ChangeCard
                   key={entry.key}
@@ -199,7 +199,7 @@ export function AIEnhanceButton() {
 
           {preview.projects.length > 0 && (
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Projects</p>
+              <p className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-on-surface-muted">Projects</p>
               {preview.projects.map((entry) => (
                 <ChangeCard
                   key={entry.key}
@@ -211,20 +211,20 @@ export function AIEnhanceButton() {
             </div>
           )}
 
-          <div className="flex flex-col gap-2 border-t border-neutral-200 pt-3 md:flex-row md:justify-end">
+          <div className="flex flex-col gap-2 border-t border-border/70 pt-3 md:flex-row md:justify-end">
             <button
               type="button"
               onClick={handleDismiss}
-              className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:bg-white"
+              className="desk-button desk-button-subtle"
             >
               Dismiss preview
             </button>
             <button
               type="button"
               onClick={handleApply}
-              className="rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700 active:scale-[0.99]"
+              className="desk-button desk-button-primary"
             >
-              Apply polish
+              Apply edits
             </button>
           </div>
         </div>
@@ -320,17 +320,17 @@ function ChangeCard({
   after: ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-[1.25rem] border border-neutral-200 bg-white shadow-[0_12px_36px_-28px_rgba(23,23,23,0.4)]">
-      <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3">
+    <div className="overflow-hidden rounded-[10px] border border-border/80 bg-white shadow-[0_14px_28px_-24px_rgba(23,23,23,0.32)]">
+      <div className="border-b border-border/70 bg-neutral-50 px-4 py-3">
         <p className="text-sm font-semibold text-on-surface">{label}</p>
       </div>
-      <div className="grid gap-px bg-neutral-200 md:grid-cols-2">
+      <div className="grid gap-px bg-border/70 md:grid-cols-2">
         <div className="bg-white px-4 py-4">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Current</p>
+          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Current copy</p>
           <div className="space-y-2 text-sm leading-6 text-on-surface-muted">{before}</div>
         </div>
-        <div className="bg-[linear-gradient(180deg,rgba(245,241,233,0.85),rgba(255,255,255,0.98))] px-4 py-4">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Proposed</p>
+        <div className="bg-[linear-gradient(180deg,rgba(246,240,232,0.84),rgba(255,255,255,0.98))] px-4 py-4">
+          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Revision pass</p>
           <div className="space-y-2 text-sm leading-6 text-on-surface">{after}</div>
         </div>
       </div>

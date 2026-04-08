@@ -8,10 +8,10 @@ interface SectionDef {
 }
 
 const CORE_SECTIONS: SectionDef[] = [
-  { key: 'basics', label: 'Basic Information', shortLabel: 'Basics' },
-  { key: 'work', label: 'Work Experience', shortLabel: 'Work' },
+  { key: 'basics', label: 'Identity & Summary', shortLabel: 'Identity' },
+  { key: 'work', label: 'Experience', shortLabel: 'Work' },
   { key: 'education', label: 'Education', shortLabel: 'Education' },
-  { key: 'skills', label: 'Skills', shortLabel: 'Skills' },
+  { key: 'skills', label: 'Capabilities', shortLabel: 'Skills' },
   { key: 'publications', label: 'Publications', shortLabel: 'Pubs' },
   { key: 'presentations', label: 'Presentations', shortLabel: 'Talks' },
   { key: 'projects', label: 'Projects', shortLabel: 'Projects' },
@@ -36,7 +36,7 @@ function hasData(resume: ResumeData, key: keyof ResumeData): boolean {
 }
 
 function itemCount(resume: ResumeData, key: keyof ResumeData): string {
-  if (key === 'basics') return 'Core'
+  if (key === 'basics') return 'Ready'
   const value = resume[key]
   if (Array.isArray(value)) {
     return value.length > 0 ? `${value.length}` : 'Add'
@@ -45,8 +45,13 @@ function itemCount(resume: ResumeData, key: keyof ResumeData): string {
   return value ? 'Ready' : 'Add'
 }
 
+function formatIndex(index: number): string {
+  return String(index + 1).padStart(2, '0')
+}
+
 function SectionButton({
   section,
+  index,
   active,
   filled,
   badge,
@@ -54,6 +59,7 @@ function SectionButton({
   compact = false,
 }: {
   section: SectionDef
+  index: number
   active: boolean
   filled: boolean
   badge: string
@@ -65,35 +71,31 @@ function SectionButton({
       type="button"
       onClick={onSelect}
       aria-current={active ? 'true' : undefined}
-      className={`w-full rounded-[20px] border text-left transition-all duration-[var(--duration-fast)] ${compact
+      className={`w-full text-left transition-all duration-[var(--duration-fast)] ${compact
         ? active
-          ? 'border-primary-300 bg-primary-600 px-4 py-2.5 text-white'
-          : 'border-border bg-white/70 px-4 py-2.5 text-on-surface-muted hover:border-primary-200 hover:bg-white hover:text-on-surface'
+          ? 'border-primary-400 bg-primary-50/35'
+          : 'border-border bg-white/75 hover:border-primary-200 hover:bg-white'
         : active
-          ? 'border-primary-300 bg-primary-50 px-4 py-3.5 shadow-sm'
-          : 'border-border/80 bg-white/72 px-4 py-3.5 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-white'
+          ? 'bg-primary-50/40'
+          : 'hover:bg-white/60'
       }`}
     >
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className={`text-[var(--font-size-body-sm)] font-semibold ${active && !compact ? 'text-primary-700' : active ? 'text-white' : 'text-on-surface'}`}>
+      <div className={`${compact ? 'grid min-w-[11rem] grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border px-3 py-3' : `grid grid-cols-[2.4rem_minmax(0,1fr)_auto] items-start gap-3 border-b border-border/70 px-4 py-3 ${active ? 'border-l-[3px] border-l-primary-600 pl-[calc(1rem-3px)]' : 'border-l-[3px] border-l-transparent'}`}`}>
+        <span className={`font-mono text-[0.68rem] uppercase tracking-[0.16em] ${active ? 'text-primary-700' : 'text-on-surface-muted'}`}>
+          {formatIndex(index)}
+        </span>
+        <div className="min-w-0">
+          <p className={`text-[var(--font-size-body-sm)] font-semibold ${active ? 'text-on-surface' : 'text-on-surface'}`}>
             {compact ? section.shortLabel : section.label}
           </p>
           {!compact && (
-            <p className={`mt-1 text-[var(--font-size-caption)] ${active ? 'text-primary-600' : 'text-on-surface-muted'}`}>
-              {filled ? 'Included in the draft' : 'Ready to add'}
+            <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-on-surface-muted">
+              {filled ? 'On the page' : 'Available to add'}
             </p>
           )}
         </div>
 
-        <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] ${active
-          ? compact
-            ? 'bg-white/20 text-white'
-            : 'bg-primary-100 text-primary-700'
-          : filled
-            ? 'bg-neutral-100 text-on-surface-muted'
-            : 'bg-accent-100 text-accent-800'
-        }`}>
+        <span className={`font-mono text-[0.68rem] uppercase tracking-[0.14em] ${filled ? 'text-on-surface-muted' : 'text-accent-800'}`}>
           {badge}
         </span>
       </div>
@@ -113,17 +115,18 @@ export function SectionNav() {
   return (
     <nav className="shell-panel flex h-full min-h-0 flex-col overflow-hidden" aria-label="Resume sections">
       <div className="border-b border-border/70 px-4 py-4">
-        <p className="shell-kicker">Table of contents</p>
+        <p className="shell-kicker">Dossier index</p>
         <p className="mt-2 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
-          Every section stays available whether it was parsed from the file or you add it manually.
+          Move through the page like a file under review. Every section remains available whether it came from parsing or you add it manually.
         </p>
       </div>
 
       <div className="flex gap-2 overflow-x-auto p-3 lg:hidden">
-        {available.map((section) => (
+        {available.map((section, index) => (
           <SectionButton
             key={section.key}
             section={section}
+            index={index}
             active={activeSection === section.key}
             badge={itemCount(resume, section.key)}
             filled={hasData(resume, section.key)}
@@ -137,6 +140,7 @@ export function SectionNav() {
         <SectionGroup
           title="Core dossier"
           sections={CORE_SECTIONS}
+          startIndex={0}
           resume={resume}
           activeSection={activeSection}
           onSelect={setActiveSection}
@@ -144,6 +148,7 @@ export function SectionNav() {
         <SectionGroup
           title="Supporting detail"
           sections={OPTIONAL_SECTIONS}
+          startIndex={CORE_SECTIONS.length}
           resume={resume}
           activeSection={activeSection}
           onSelect={setActiveSection}
@@ -156,12 +161,14 @@ export function SectionNav() {
 function SectionGroup({
   title,
   sections,
+  startIndex,
   resume,
   activeSection,
   onSelect,
 }: {
   title: string
   sections: SectionDef[]
+  startIndex: number
   resume: ResumeData
   activeSection: string
   onSelect: (section: string) => void
@@ -169,11 +176,12 @@ function SectionGroup({
   return (
     <div>
       <p className="editor-label mb-3">{title}</p>
-      <div className="space-y-2">
-        {sections.map((section) => (
+      <div className="space-y-0">
+        {sections.map((section, index) => (
           <SectionButton
             key={section.key}
             section={section}
+            index={startIndex + index}
             active={activeSection === section.key}
             badge={itemCount(resume, section.key)}
             filled={hasData(resume, section.key)}

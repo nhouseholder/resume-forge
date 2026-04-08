@@ -48,27 +48,27 @@ export function ExportPanel() {
   return (
     <div className="space-y-6">
       <div className="editor-section-header">
-        <span className="shell-kicker">Publish options</span>
-        <h2 className="text-[var(--font-size-h2)] text-on-surface">Send the finished artifact</h2>
+        <span className="shell-kicker">Dispatch desk</span>
+        <h2 className="text-[var(--font-size-h2)] text-on-surface">Issue the finished document</h2>
         <p className="editor-note max-w-xl">
-          Share a read-only link for browser viewing, or open the print flow to generate a PDF with the current template and styling.
+          Use the reader-facing share link when the page is ready to circulate, or open the print flow when you need a clean PDF copy of the same dossier.
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <PublishCard
-          eyebrow="Read-only link"
-          title="Copy share URL"
-          description="Anyone with the link can view the current resume snapshot without needing an account."
-          actionLabel="Copy share link"
+      <div className="grid gap-4 md:grid-cols-2">
+        <DispatchCard
+          eyebrow="Reader copy"
+          title="Issue share URL"
+          description="Anyone with the link can review the current resume snapshot without editing access or an account."
+          actionLabel="Copy link"
           onAction={copyShareLink}
           primary
         />
-        <PublishCard
-          eyebrow="Print-ready file"
+        <DispatchCard
+          eyebrow="Print ticket"
           title="Open PDF print flow"
-          description="Use the browser print dialog to save the current resume as a PDF with the production print styles applied."
-          actionLabel="Save as PDF"
+          description="Use the browser print dialog to capture the same page as a print-ready PDF with the document styles preserved."
+          actionLabel="Print to PDF"
           onAction={exportPDF}
         />
       </div>
@@ -85,7 +85,7 @@ export function ExportPanel() {
   )
 }
 
-function PublishCard({
+function DispatchCard({
   eyebrow,
   title,
   description,
@@ -101,16 +101,16 @@ function PublishCard({
   primary?: boolean
 }) {
   return (
-    <div className="shell-card p-5">
+    <div className="proof-ticket p-5">
       <p className="shell-kicker">{eyebrow}</p>
       <h3 className="mt-3 text-[var(--font-size-h3)] text-on-surface">{title}</h3>
       <p className="mt-3 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">{description}</p>
       <button
         type="button"
         onClick={onAction}
-        className={`mt-5 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all duration-[var(--duration-fast)] ${primary
-          ? 'bg-primary-600 text-white hover:-translate-y-0.5 hover:bg-primary-700'
-          : 'border border-border bg-white/80 text-on-surface hover:-translate-y-0.5 hover:bg-white'
+        className={`mt-5 desk-button ${primary
+          ? 'desk-button-primary'
+          : 'desk-button-subtle'
         }`}
       >
         {actionLabel}

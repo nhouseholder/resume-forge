@@ -64,19 +64,19 @@ const PREVIEW_SCALE: Record<'desktop' | 'tablet' | 'mobile', number> = {
 
 const VIEW_COPY: Record<WorkspaceView, { eyebrow: string; title: string; description: string }> = {
   edit: {
-    eyebrow: 'Edit the document',
-    title: 'Section editor',
-    description: 'Work through the resume like a manuscript. On larger screens the preview stays visible; on smaller screens it remains one tap away in Publish.',
+    eyebrow: 'Working leaf',
+    title: 'Current section',
+    description: 'Move through the dossier one leaf at a time. The document stays on the desk while you revise the active section.',
   },
   style: {
-    eyebrow: 'Shape the presentation',
-    title: 'Style studio',
-    description: 'Choose the template voice, palette, typography, and section visibility with controls that map directly to the rendered document.',
+    eyebrow: 'House treatments',
+    title: 'Specimen table',
+    description: 'Choose the publishing treatment, palette, typography, and section visibility with controls that change the reader view directly.',
   },
   publish: {
-    eyebrow: 'Finish the artifact',
-    title: 'Publish and export',
-    description: 'Generate a read-only share link or open the browser print flow for a polished PDF.',
+    eyebrow: 'Dispatch desk',
+    title: 'Issue and export',
+    description: 'Release the reader-facing link or print a PDF from the same working page without switching contexts.',
   },
 }
 
@@ -132,31 +132,38 @@ export function ResumeEditor() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="border-b border-border/60 bg-white/70 backdrop-blur-xl">
+      <div className="border-b border-border/60 bg-surface/94">
         <div className="mx-auto flex max-w-[1800px] flex-col gap-4 px-4 py-4 lg:px-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
-              <p className="shell-kicker">Editing workspace</p>
+              <p className="shell-kicker">Proof room</p>
               <h1 className="mt-2 text-[var(--font-size-h2)] text-on-surface">
                 {resume.basics?.name || 'Untitled candidate'}
               </h1>
               <p className="mt-2 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
-                Keep the document close while you refine content, shape the presentation, and publish the final artifact.
+                Keep the document central while you revise the copy, choose the house treatment, and prepare the final reader version.
               </p>
+
+              <div className="mt-4 folio-meta">
+                {activeTemplate && <span>{activeTemplate.name}</span>}
+                {detectedField && <span>{detectedField}</span>}
+                <span>{previewMode} view</span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {activeTemplate && <span className="shell-chip">{activeTemplate.name}</span>}
-              {detectedField && <span className="shell-chip">{detectedField}</span>}
-              <span className="shell-chip">{previewMode} preview</span>
+            <div className="max-w-sm xl:text-right">
+              <p className="shell-kicker">Reader standard</p>
+              <p className="mt-2 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
+                The page remains visible while revisions happen around it, so the front end behaves like a working proof instead of a wizard.
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="dossier-tabs">
             {([
-              { id: 'edit', label: 'Edit' },
-              { id: 'style', label: 'Style' },
-              { id: 'publish', label: 'Publish' },
+              { id: 'edit', label: 'Review' },
+              { id: 'style', label: 'Treatments' },
+              { id: 'publish', label: 'Dispatch' },
             ] as const).map((tab) => {
               const active = view === tab.id
               return (
@@ -164,10 +171,7 @@ export function ResumeEditor() {
                   key={tab.id}
                   type="button"
                   onClick={() => setView(tab.id)}
-                  className={`rounded-full border px-4 py-2 text-[var(--font-size-body-sm)] font-semibold transition-all duration-[var(--duration-fast)] ${active
-                    ? 'border-primary-300 bg-primary-600 text-white shadow-sm'
-                    : 'border-border bg-white/70 text-on-surface-muted hover:-translate-y-0.5 hover:bg-white hover:text-on-surface'
-                  }`}
+                  className={`${active ? 'dossier-tab dossier-tab-active' : 'dossier-tab'}`}
                 >
                   {tab.label}
                 </button>
@@ -185,11 +189,11 @@ export function ResumeEditor() {
 
           <section className="shell-panel flex min-h-0 flex-col overflow-hidden">
             <div className="border-b border-border/70 px-5 py-5 sm:px-6">
-              <p className="shell-kicker">{view === 'edit' ? 'Edit the document' : panelCopy.eyebrow}</p>
+              <p className="shell-kicker">{view === 'edit' ? 'Active leaf' : panelCopy.eyebrow}</p>
               <h2 className="mt-2 text-[var(--font-size-h3)] text-on-surface">{sectionTitle}</h2>
               <p className="mt-2 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
                 {view === 'edit'
-                  ? 'Use the table of contents to move through the resume. Each section stays editable whether it came from parsing or you add it yourself.'
+                  ? 'Use the dossier index to move through the page. Every section stays editable whether it came from parsing or you add it manually.'
                   : panelCopy.description}
               </p>
             </div>
@@ -212,8 +216,8 @@ export function ResumeEditor() {
                 <Suspense fallback={<PanelSkeleton />}>
                   <div className="space-y-6">
                     <ExportPanel />
-                    <div className="shell-card p-5">
-                      <p className="shell-kicker">Publish checklist</p>
+                    <div className="proof-ticket p-5">
+                      <p className="shell-kicker">Dispatch checklist</p>
                       <ul className="mt-4 space-y-3 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
                         <li>Check the preview at desktop, tablet, and mobile before copying the link.</li>
                         <li>Use the section visibility controls to hide material that should not appear in the final resume.</li>
@@ -278,19 +282,19 @@ function PreviewPane({
     <section className={`workspace-stage min-h-0 flex-col overflow-hidden ${className}`}>
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-4 py-4 lg:px-5">
         <div>
-          <p className="shell-kicker">Live document</p>
-          <h2 className="mt-1 text-[var(--font-size-h4)] font-semibold text-on-surface">Preview stage</h2>
+          <p className="shell-kicker">Reader view</p>
+          <h2 className="mt-1 text-[var(--font-size-h4)] font-semibold text-on-surface">Live dossier</h2>
         </div>
 
-        <div className="flex items-center gap-2 rounded-full border border-border/70 bg-white/75 p-1">
+        <div className="flex items-center gap-4 border-l border-border/70 pl-4">
           {(['desktop', 'tablet', 'mobile'] as const).map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => setPreviewMode(mode)}
-              className={`rounded-full px-3 py-1.5 text-[var(--font-size-caption)] font-semibold capitalize transition-all duration-[var(--duration-fast)] ${previewMode === mode
-                ? 'bg-primary-600 text-white'
-                : 'text-on-surface-muted hover:bg-white hover:text-on-surface'
+              className={`border-b-2 pb-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] transition-all duration-[var(--duration-fast)] ${previewMode === mode
+                ? 'border-primary-600 text-on-surface'
+                : 'border-transparent text-on-surface-muted hover:text-on-surface'
               }`}
             >
               {mode}

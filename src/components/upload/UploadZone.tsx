@@ -55,7 +55,7 @@ export function UploadZone({ onFile, disabled }: UploadZoneProps) {
   }, [])
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -63,45 +63,41 @@ export function UploadZone({ onFile, disabled }: UploadZoneProps) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         disabled={disabled}
-        className={`w-full rounded-[28px] border p-6 text-left transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-quart)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 sm:p-8 ${disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'} ${isDragging
-          ? 'border-primary-300 bg-primary-50/70 shadow-md -translate-y-1'
-          : 'border-border bg-white/80 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-white'
+        className={`w-full rounded-[14px] border text-left transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-quart)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'} ${isDragging
+          ? 'border-primary-400 bg-primary-50/35 shadow-[0_28px_50px_-40px_rgba(60,35,25,0.35)]'
+          : 'border-border bg-white/88 hover:border-primary-200 hover:bg-white'
         }`}
       >
-        <div className="grid gap-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-primary-100 bg-white/90 shadow-sm">
-            <svg
-              className={`h-8 w-8 transition-colors duration-[var(--duration-fast)] ${isDragging ? 'text-primary-600' : 'text-primary-500'}`}
-              fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
-              />
-            </svg>
+        <div className="border-b border-border/70 px-5 py-4 sm:px-6">
+          <div className="folio-meta">
+            <span>Intake</span>
+            <span>PDF or DOCX</span>
+            <span>Up to {MAX_SIZE_MB}MB</span>
           </div>
+        </div>
 
+        <div className="grid gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_13rem] lg:items-center">
           <div>
-            <p className="shell-kicker">Document intake</p>
+            <p className="shell-kicker">Current document</p>
             <p className="mt-3 text-[var(--font-size-h3)] text-on-surface">
-              {isDragging ? 'Drop your resume here' : 'Upload a resume file to start the studio draft'}
+              {isDragging ? 'Drop the file onto the desk' : 'Place the resume you already use on the desk.'}
             </p>
             <p className="mt-3 max-w-xl text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
-              Accepted formats: PDF and DOCX. Up to {MAX_SIZE_MB}MB. The file is read locally first, then extracted text is sent to the parser while your draft continues in the browser.
+              The file is read locally first. Extracted text is then sent to the parser so the working proof can be assembled while your editable draft remains in the browser.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="shell-chip">PDF</span>
-              <span className="shell-chip">DOCX</span>
-              <span className="shell-chip">Up to {MAX_SIZE_MB}MB</span>
-            </div>
           </div>
 
-          <span className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-[var(--font-size-body-sm)] font-semibold transition-all duration-[var(--duration-fast)] ${isDragging
-            ? 'bg-primary-100 text-primary-700'
-            : 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
-          }`}>
-            Upload resume file
-          </span>
+          <div className={`proof-ticket px-5 py-5 ${isDragging ? 'border-primary-400 bg-primary-50/50' : ''}`}>
+            <p className="shell-kicker">Insert file</p>
+            <p className="mt-3 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">
+              Choose a document and begin the revision pass.
+            </p>
+            <span className={`mt-5 desk-button ${isDragging ? 'border-primary-300 bg-primary-50 text-primary-700' : 'desk-button-subtle'}`}>
+              Select document
+            </span>
+          </div>
         </div>
+
         <input
           ref={inputRef} type="file" accept=".pdf,.docx"
           onChange={() => { const f = inputRef.current?.files?.[0]; if (f) handleFile(f) }}

@@ -38,12 +38,17 @@ export function TemplateCustomizer() {
   return (
     <div className="space-y-8">
       <header className="editor-section-header">
-        <span className="shell-kicker">Style studio</span>
-        <h2 className="text-[var(--font-size-h2)] text-on-surface">Choose the document voice</h2>
+        <span className="shell-kicker">House style proofs</span>
+        <h2 className="text-[var(--font-size-h2)] text-on-surface">Choose the publishing treatment</h2>
         <p className="editor-note max-w-xl">
-          Pick the template character first, then refine palette, typography, spacing, and visibility. These controls change the rendered resume directly.
+          Start with the house layout, then review palette, typography, spacing, and visibility like specimen proofs. Every choice changes the rendered page directly.
         </p>
-        {detectedField && <span className="shell-chip">Detected field: {detectedField}</span>}
+        {detectedField && (
+          <div className="folio-meta mt-2">
+            <span>Detected field</span>
+            <span>{detectedField}</span>
+          </div>
+        )}
       </header>
 
       <ControlGroup
@@ -59,28 +64,28 @@ export function TemplateCustomizer() {
                 key={template.id}
                 type="button"
                 onClick={() => updateMeta({ templateId: template.id })}
-                className={`rounded-[24px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.templateId === template.id
-                  ? 'border-primary-300 bg-primary-50 shadow-sm'
-                  : 'border-border bg-white/75 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-white'
+                className={`rounded-[12px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.templateId === template.id
+                  ? 'border-primary-400 bg-primary-50/35'
+                  : 'border-border/80 bg-transparent hover:border-primary-200 hover:bg-white/60'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="shell-kicker">Template</p>
+                    <p className="shell-kicker">House layout</p>
                     <p className="mt-2 text-[var(--font-size-h4)] font-semibold text-on-surface">{template.name}</p>
                   </div>
                   {recommended && (
-                    <span className="rounded-full bg-accent-100 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-accent-800">
-                      Recommended
+                    <span className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-accent-800">
+                      Field match
                     </span>
                   )}
                 </div>
 
                 <p className="mt-3 text-[var(--font-size-body-sm)] leading-6 text-on-surface-muted">{template.description}</p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-3 border-t border-border/70 pt-3">
                   {template.targetFields.map((field) => (
-                    <span key={field} className="rounded-full border border-border/70 bg-white/80 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-on-surface-muted">
+                    <span key={field} className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
                       {field}
                     </span>
                   ))}
@@ -105,9 +110,9 @@ export function TemplateCustomizer() {
                 key={palette.id}
                 type="button"
                 onClick={() => updateMeta({ palette: palette.id })}
-                className={`rounded-[20px] border p-3 text-left transition-all duration-[var(--duration-fast)] ${meta.palette === palette.id
-                  ? 'border-primary-300 bg-primary-50 shadow-sm'
-                  : 'border-border bg-white/75 hover:border-primary-200 hover:bg-white'
+                className={`rounded-[12px] border p-3 text-left transition-all duration-[var(--duration-fast)] ${meta.palette === palette.id
+                  ? 'border-primary-400 bg-primary-50/35'
+                  : 'border-border/80 bg-transparent hover:border-primary-200 hover:bg-white/60'
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -115,7 +120,7 @@ export function TemplateCustomizer() {
                     {[neutral['900'], neutral['700'], accent['500'], accent['300'], neutral['100']].map((color, index) => (
                       <div
                         key={index}
-                        className="h-9 w-9 rounded-full border border-neutral-200/60"
+                        className="h-8 w-8 rounded-[3px] border border-neutral-200/60"
                         style={{ backgroundColor: color }}
                       />
                     ))}
@@ -142,9 +147,9 @@ export function TemplateCustomizer() {
               key={pairing.id}
               type="button"
               onClick={() => updateMeta({ fontPairing: pairing.id })}
-              className={`rounded-[20px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.fontPairing === pairing.id
-                ? 'border-primary-300 bg-primary-50 shadow-sm'
-                : 'border-border bg-white/75 hover:border-primary-200 hover:bg-white'
+              className={`rounded-[12px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.fontPairing === pairing.id
+                ? 'border-primary-400 bg-primary-50/35'
+                : 'border-border/80 bg-transparent hover:border-primary-200 hover:bg-white/60'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -157,7 +162,7 @@ export function TemplateCustomizer() {
                     A clear line of experience that reads well in print and on screen.
                   </p>
                 </div>
-                <span className="rounded-full border border-border/70 bg-white/80 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-on-surface-muted">
+                <span className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-on-surface-muted">
                   {pairing.name}
                 </span>
               </div>
@@ -172,14 +177,14 @@ export function TemplateCustomizer() {
         label="Density"
         description="Tighten or loosen the document rhythm depending on how much material you need to fit."
       >
-        <div className="grid grid-cols-3 gap-2 rounded-full border border-border/70 bg-white/80 p-1">
+        <div className="grid grid-cols-3 border border-border/70 bg-white/70">
           {(['compact', 'balanced', 'spacious'] as const).map((density) => (
             <button
               key={density}
               type="button"
               onClick={() => updateMeta({ layoutDensity: density })}
-              className={`rounded-full px-3 py-2 text-sm font-semibold capitalize transition-all duration-[var(--duration-fast)] ${meta.layoutDensity === density
-                ? 'bg-primary-600 text-white shadow-sm'
+              className={`border-r border-border/70 px-3 py-2.5 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] transition-all duration-[var(--duration-fast)] last:border-r-0 ${meta.layoutDensity === density
+                ? 'bg-primary-50 text-on-surface'
                 : 'text-on-surface-muted hover:bg-white hover:text-on-surface'
               }`}
             >
@@ -202,9 +207,9 @@ export function TemplateCustomizer() {
               key={String(option.active)}
               type="button"
               onClick={() => updateMeta({ darkMode: option.active })}
-              className={`rounded-[20px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.darkMode === option.active
-                ? 'border-primary-300 bg-primary-50 shadow-sm'
-                : 'border-border bg-white/75 hover:border-primary-200 hover:bg-white'
+              className={`rounded-[12px] border p-4 text-left transition-all duration-[var(--duration-fast)] ${meta.darkMode === option.active
+                ? 'border-primary-400 bg-primary-50/35'
+                : 'border-border/80 bg-transparent hover:border-primary-200 hover:bg-white/60'
               }`}
             >
               <p className="text-sm font-semibold text-on-surface">{option.label}</p>
@@ -227,16 +232,16 @@ export function TemplateCustomizer() {
                 key={key}
                 type="button"
                 onClick={() => toggleSection(key)}
-                className={`rounded-[18px] border px-4 py-3 text-left transition-all duration-[var(--duration-fast)] ${isVisible
+                className={`rounded-[10px] border px-4 py-3 text-left transition-all duration-[var(--duration-fast)] ${isVisible
                   ? 'border-primary-200 bg-white/85 text-on-surface hover:border-primary-300'
                   : 'border-border bg-neutral-100/80 text-on-surface-muted hover:bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{label}</span>
-                  <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] ${isVisible
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'bg-neutral-200 text-on-surface-muted'
+                  <span className={`font-mono text-[0.66rem] font-semibold uppercase tracking-[0.16em] ${isVisible
+                    ? 'text-primary-700'
+                    : 'text-on-surface-muted'
                   }`}>
                     {isVisible ? 'Show' : 'Hide'}
                   </span>
