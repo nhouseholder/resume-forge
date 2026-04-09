@@ -84,6 +84,14 @@ export function corsHeaders(request: Request, env: Env): Record<string, string> 
   }
 }
 
+interface ParseResponse {
+  ok: boolean
+  data?: InferredResumeData
+  error?: string
+  requestId?: string
+  retryAfter?: number
+}
+
 function jsonResponse(body: unknown, init: ResponseInit, request: Request, env: Env): Response {
   const headers = new Headers(init.headers)
   for (const [k, v] of Object.entries(corsHeaders(request, env))) {
@@ -769,7 +777,7 @@ export const onRequestOptions: PagesFunction<Env> = async ({ request, env }) => 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!env.AI) {
     return jsonResponse(
-      { error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
+      { ok: false, error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
       { status: 500 },
       request,
       env,
@@ -779,7 +787,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const rateLimit = checkRateLimit(getClientIdentifier(request))
   if (!rateLimit.allowed) {
     return jsonResponse(
-      { error: 'Too many parse attempts. Please wait a minute and try again.' },
+      { ok: false, error: 'Too many parse attempts. Please wait a minute and try again.', retryAfter: rateLimit.retryAfterSeconds },
       {
         status: 429,
         headers: {
@@ -796,15 +804,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   try {
     body = await request.json()
   } catch {
-    return jsonResponse({ error: 'Invalid JSON body' }, { status: 400 }, request, env)
+    return jsonResponse({ ok: false, error: 'Invalid JSON body' }, { status: 400 }, request, env)
   }
 
   if (!body.text?.trim()) {
-    return jsonResponse({ error: 'Missing or empty text field' }, { status: 400 }, request, env)
+    return jsonResponse({ ok: false, error: 'Missing or empty text field' }, { status: 400 }, request, env)
   }
 
   if (body.text.length > 50000) {
-    return jsonResponse({ error: 'Text too long (max 50,000 characters)' }, { status: 400 }, request, env)
+    return jsonResponse({ ok: false, error: 'Text too long (max 50,000 characters)' }, { status: 400 }, request, env)
   }
 
   const model = env.CF_AI_PARSE_MODEL?.trim() || DEFAULT_PARSE_MODEL
@@ -1051,7 +1059,7 @@ Rules:
 
     const normalized = parseAIResumeResponse(result, requestId, model)
 
-    return jsonResponse({ data: normalized }, { status: 200 }, request, env)
+    return jsonResponse({ ok: true, data: normalized, requestId }, { status: 200 }, request, env)
   } catch (err) {
     if (shouldFallbackParseMode(err)) {
       console.warn('Workers AI structured parse failed, retrying with json_object fallback', {
@@ -1064,7 +1072,7 @@ Rules:
         const fallbackResult = await requestWorkersAIWithRetry(env.AI, model, buildFallbackParsePayload(body.text))
         const normalized = parseAIResumeResponse(fallbackResult, requestId, model)
 
-        return jsonResponse({ data: normalized }, { status: 200 }, request, env)
+        return jsonResponse({ ok: true, data: normalized, requestId }, { status: 200 }, request, env)
       } catch (fallbackErr) {
         const fallbackResponse = getUserFacingAIError(getAIErrorStatus(fallbackErr))
         console.error('Workers AI parse fallback error', {
@@ -1072,7 +1080,7 @@ Rules:
           model,
           error: getErrorMessage(fallbackErr),
         })
-        return jsonResponse({ error: fallbackResponse.error }, { status: fallbackResponse.status }, request, env)
+        return jsonResponse({ ok: false, error: fallbackResponse.error, requestId }, { status: fallbackResponse.status }, request, env)
       }
     }
 
@@ -1082,6 +1090,6 @@ Rules:
       model,
       error: getErrorMessage(err),
     })
-    return jsonResponse({ error: errorResponse.error }, { status: errorResponse.status }, request, env)
+    return jsonResponse({ ok: false, error: errorResponse.error, requestId }, { status: errorResponse.status }, request, env)
   }
 }

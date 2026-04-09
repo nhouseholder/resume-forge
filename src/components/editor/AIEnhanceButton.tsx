@@ -1,14 +1,15 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ReactNode, memo } from 'react'
 import { useResumeStore } from '@/store/useResumeStore'
 import type { ResumeData } from '@/types/resume'
 import {
   applyResumeEnhancement,
-  buildResumeEnhancementRequest,
   hasEnhanceableContent,
   type ResumeEnhancementPatch,
 } from '@/utils/resumeEnhancement'
+import { TEMPLATE_REGISTRY } from '@/components/templates/templateConfig'
 
 interface EnhanceResponse {
+  ok: boolean
   data?: ResumeEnhancementPatch
   model?: string
   error?: string
@@ -33,26 +34,24 @@ interface EnhancementPreview {
 
 const API_URL = '/api/enhance-resume'
 
-export function AIEnhanceButton() {
-  const resume = useResumeStore((state) => state.resume)
-  const meta = useResumeStore((state) => state.meta)
+export const AIEnhanceButton = memo(function AIEnhanceButton() {
+  const canEnhance = useResumeStore((state) => (state.resume ? hasEnhanceableContent(state.resume) : false))
+  const templateId = useResumeStore((state) => state.meta.templateId)
+  const templateName = TEMPLATE_REGISTRY.find(t => t.id === templateId)?.name ?? 'Meridian'
   const detectedField = useResumeStore((state) => state.detectedField)
-  const updateSection = useResumeStore((state) => state.updateSection)
+  const workCount = useResumeStore((state) => state.resume?.work?.length ?? 0)
+  const projectCount = useResumeStore((state) => state.resume?.projects?.length ?? 0)
+
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [pendingPatch, setPendingPatch] = useState<ResumeEnhancementPatch | null>(null)
+  const [preview, setPreview] = useState<EnhancementPreview | null>(null)
   const [pendingModel, setPendingModel] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  if (!resume) {
-    return null
-  }
-
-  const canEnhance = hasEnhanceableContent(resume)
-  const preview = pendingPatch ? buildEnhancementPreview(resume, pendingPatch) : null
-
   const handleEnhance = async () => {
-    if (!canEnhance || isEnhancing) {
+    const { resume, meta } = useResumeStore.getState()
+    if (!resume || !canEnhance || isEnhancing) {
       return
     }
 
@@ -73,7 +72,7 @@ export function AIEnhanceButton() {
 
       const payload = (await response.json().catch(() => ({}))) as EnhanceResponse
 
-      if (!response.ok || !payload.data) {
+      if (!response.ok || !payload.ok || !payload.data) {
         setError(payload.error ?? `Enhancement failed with status ${response.status}.`)
         return
       }
@@ -81,12 +80,14 @@ export function AIEnhanceButton() {
       const nextPreview = buildEnhancementPreview(resume, payload.data)
       if (nextPreview.totalChanges === 0) {
         setPendingPatch(null)
+        setPreview(null)
         setPendingModel(null)
         setNotice('No stronger phrasing was found from the current content.')
         return
       }
 
       setPendingPatch(payload.data)
+      setPreview(nextPreview)
       setPendingModel(payload.model ?? null)
       setNotice(`Review ${nextPreview.totalChanges} proposed edit${nextPreview.totalChanges === 1 ? '' : 's'} before applying.`)
     } catch (requestError) {
@@ -97,7 +98,8 @@ export function AIEnhanceButton() {
   }
 
   const handleApply = () => {
-    if (!pendingPatch || !preview) {
+    const { resume, updateSection } = useResumeStore.getState()
+    if (!pendingPatch || !preview || !resume) {
       return
     }
 
@@ -108,19 +110,17 @@ export function AIEnhanceButton() {
 
     const label = pendingModel ? ` with ${pendingModel}` : ''
     setPendingPatch(null)
+    setPreview(null)
     setPendingModel(null)
     setNotice(`Applied ${preview.totalChanges} polished edit${preview.totalChanges === 1 ? '' : 's'}${label}.`)
   }
 
   const handleDismiss = () => {
     setPendingPatch(null)
+    setPreview(null)
     setPendingModel(null)
     setNotice('AI polish preview dismissed.')
   }
-
-  const requestPreview = buildResumeEnhancementRequest(resume, meta, detectedField)
-  const workCount = requestPreview.source.work.length
-  const projectCount = requestPreview.source.projects.length
 
   return (
     <div className="proof-ticket p-4 sm:p-5">
@@ -129,7 +129,7 @@ export function AIEnhanceButton() {
           <p className="shell-kicker">Tracked revision</p>
           <p className="mt-2 text-sm font-semibold text-on-surface">Prepare a line-edit pass for the summary and strongest bullets without changing the facts.</p>
           <p className="mt-2 text-xs leading-5 text-on-surface-muted">
-            Uses the {requestPreview.context.templateName} treatment for {requestPreview.context.fieldCategory ?? 'general'} resumes.
+            Uses the {templateName} treatment for {detectedField ?? 'general'} resumes.
             {` ${workCount} work entries and ${projectCount} projects are eligible.`}
           </p>
         </div>
@@ -234,7 +234,7 @@ export function AIEnhanceButton() {
       {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
     </div>
   )
-}
+})
 
 function buildEnhancementPreview(resume: ResumeData, patch: ResumeEnhancementPatch): EnhancementPreview {
   const nextResume = applyResumeEnhancement(resume, patch)

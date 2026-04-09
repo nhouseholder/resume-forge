@@ -33,6 +33,15 @@ interface AIEnhancementResponse {
 const enhanceRateLimitStore = new Map<string, { count: number; windowStart: number }>()
 const DEFAULT_ENHANCE_MODEL = '@cf/qwen/qwen3-30b-a3b-fp8'
 
+interface EnhanceResponse {
+  ok: boolean
+  data?: typeof sanitizePatch extends (x: any) => infer R ? R : any
+  model?: string
+  error?: string
+  requestId?: string
+  retryAfter?: number
+}
+
 function jsonResponse(body: unknown, init: ResponseInit, request: Request, env: Env): Response {
   const headers = new Headers(init.headers)
   for (const [key, value] of Object.entries(corsHeaders(request, env))) {
@@ -97,7 +106,7 @@ export const onRequestOptions: PagesFunction<Env> = async ({ request, env }) => 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!env.AI) {
     return jsonResponse(
-      { error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
+      { ok: false, error: 'Workers AI binding not configured. Add an AI binding named AI in Cloudflare Pages and redeploy.' },
       { status: 500 },
       request,
       env,
@@ -107,7 +116,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const rateLimit = checkRateLimit(getClientIdentifier(request), Date.now(), enhanceRateLimitStore)
   if (!rateLimit.allowed) {
     return jsonResponse(
-      { error: 'Too many AI polish attempts. Please wait a minute and try again.' },
+      { ok: false, error: 'Too many AI polish attempts. Please wait a minute and try again.', retryAfter: rateLimit.retryAfterSeconds },
       {
         status: 429,
         headers: {
@@ -123,16 +132,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   try {
     body = await request.json()
   } catch {
-    return jsonResponse({ error: 'Invalid JSON body' }, { status: 400 }, request, env)
+    return jsonResponse({ ok: false, error: 'Invalid JSON body' }, { status: 400 }, request, env)
   }
 
   if (!body.resume || !body.meta) {
-    return jsonResponse({ error: 'Missing resume or design metadata' }, { status: 400 }, request, env)
+    return jsonResponse({ ok: false, error: 'Missing resume or design metadata' }, { status: 400 }, request, env)
   }
 
   if (!hasEnhanceableContent(body.resume)) {
     return jsonResponse(
-      { error: 'Add a summary or bullet highlights before requesting AI polish.' },
+      { ok: false, error: 'Add a summary or bullet highlights before requesting AI polish.' },
       { status: 400 },
       request,
       env,
@@ -141,6 +150,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   const enhancementRequest = buildResumeEnhancementRequest(body.resume, body.meta, body.fieldCategory ?? null)
   const model = env.CF_AI_ENHANCE_MODEL?.trim() || DEFAULT_ENHANCE_MODEL
+  const requestId = request.headers.get('cf-ray') ?? 'unknown'
 
   try {
     const result = await requestWorkersAIWithRetry(env.AI, model, {
@@ -212,8 +222,12 @@ Rules:
     const content = extractAIContent(result)
 
     if (!content) {
+      console.error('Workers AI response missing content', {
+        requestId,
+        model,
+      })
       return jsonResponse(
-        { error: 'The resume polish assistant returned an empty response.' },
+        { ok: false, error: 'The resume polish assistant returned an empty response.', requestId },
         { status: 502 },
         request,
         env,
@@ -224,8 +238,12 @@ Rules:
     try {
       parsed = JSON.parse(content) as AIEnhancementResponse
     } catch {
+      console.error('Workers AI response content was not valid JSON', {
+        requestId,
+        model,
+      })
       return jsonResponse(
-        { error: 'The resume polish assistant returned an unreadable response.' },
+        { ok: false, error: 'The resume polish assistant returned an unreadable response.', requestId },
         { status: 502 },
         request,
         env,
@@ -234,14 +252,16 @@ Rules:
 
     const data = sanitizePatch(parsed)
 
-    return jsonResponse({ data, model }, { status: 200 }, request, env)
+    return jsonResponse({ ok: true, data, model, requestId }, { status: 200 }, request, env)
   } catch (error) {
-    const friendlyError = getEnhancementError(getAIErrorStatus(error) ?? 502)
-    return jsonResponse(
-      { error: friendlyError.error },
-      { status: friendlyError.status },
-      request,
-      env,
-    )
+    const originalStatus = getAIErrorStatus(error)
+    const friendlyError = getEnhancementError(originalStatus ?? 502)
+    console.error('Workers AI enhance error', {
+      requestId,
+      model,
+      status: originalStatus,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return jsonResponse({ ok: false, error: friendlyError.error, requestId }, { status: friendlyError.status }, request, env)
   }
 }

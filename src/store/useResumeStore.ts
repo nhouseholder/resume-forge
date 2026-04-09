@@ -1,10 +1,25 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
+import { get, set, del } from 'idb-keyval';
 import type {
   ResumeData,
   ResumeMeta,
   FieldCategory,
 } from '../types/resume';
+
+// ── Storage adapter ──
+
+const indexedDBStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return (await get(name)) || null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await set(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await del(name);
+  },
+};
 
 // ── Default meta ──
 
@@ -176,6 +191,7 @@ export const useResumeStore = create<ResumeStore>()(
     }),
     {
       name: 'resume-builder-store',
+      storage: createJSONStorage(() => indexedDBStorage),
       partialize: (state) => ({
         resume: state.resume,
         meta: state.meta,

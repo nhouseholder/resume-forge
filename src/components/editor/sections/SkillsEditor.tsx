@@ -2,12 +2,10 @@ import { useResumeStore } from '@/store/useResumeStore'
 import type { ResumeSkill } from '@/types/resume'
 
 export function SkillsEditor() {
-  const resume = useResumeStore((s) => s.resume)
+  const skills = useResumeStore((s) => s.resume?.skills ?? [])
   const updateSection = useResumeStore((s) => s.updateSection)
   const addSectionItem = useResumeStore((s) => s.addSectionItem)
   const removeSectionItem = useResumeStore((s) => s.removeSectionItem)
-
-  const skills = resume?.skills ?? []
 
   const updateSkill = (index: number, field: keyof ResumeSkill, value: string) => {
     const updated = skills.map((s, i) =>

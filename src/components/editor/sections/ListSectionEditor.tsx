@@ -27,12 +27,10 @@ export function ListSectionEditor({
   createBlank,
   getCardTitle,
 }: ListSectionEditorProps) {
-  const resume = useResumeStore((s) => s.resume)
+  const items = useResumeStore((s) => (s.resume?.[sectionKey] as unknown as Record<string, unknown>[]) ?? [])
   const updateSection = useResumeStore((s) => s.updateSection)
   const addSectionItem = useResumeStore((s) => s.addSectionItem)
   const removeSectionItem = useResumeStore((s) => s.removeSectionItem)
-
-  const items = (resume?.[sectionKey] as unknown as Record<string, unknown>[]) ?? []
 
   const handleAdd = () => {
     addSectionItem(sectionKey, createBlank())

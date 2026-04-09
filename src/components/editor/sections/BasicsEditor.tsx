@@ -5,10 +5,9 @@ import type { ResumeBasics } from '@/types/resume'
 const EMPTY_BASICS: ResumeBasics = { name: '' }
 
 export function BasicsEditor() {
-  const resume = useResumeStore((s) => s.resume)
+  const basics = useResumeStore((s) => s.resume?.basics ?? EMPTY_BASICS)
   const updateSection = useResumeStore((s) => s.updateSection)
 
-  const basics = resume?.basics ?? EMPTY_BASICS
   const [local, setLocal] = useState<ResumeBasics>(basics)
 
   useEffect(() => {
