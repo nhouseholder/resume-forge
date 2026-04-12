@@ -1,6 +1,7 @@
 import type { FieldCategory } from '../../types/resume'
 import { TEMPLATE_BRIEFS } from '../../design/templateBriefs'
 import type { TemplateLayoutMode } from './templateUtils'
+import ArchiveTemplate from './archive/ArchiveTemplate'
 import MeridianTemplate from './meridian/MeridianTemplate'
 import SignalTemplate from './signal/SignalTemplate'
 import CanvasTemplate from './canvas/CanvasTemplate'
@@ -19,6 +20,7 @@ export interface TemplateConfig {
 }
 
 const TEMPLATE_COMPONENTS: Record<string, TemplateComponent> = {
+  archive: ArchiveTemplate,
   meridian: MeridianTemplate,
   signal: SignalTemplate,
   canvas: CanvasTemplate,

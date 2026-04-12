@@ -57,9 +57,9 @@ type ArraySectionKey = Exclude<keyof ResumeData, 'basics' | 'meta'>
 type WorkspaceView = 'edit' | 'style' | 'publish'
 
 const PREVIEW_SCALE: Record<'desktop' | 'tablet' | 'mobile', number> = {
-  desktop: 0.6,
-  tablet: 0.48,
-  mobile: 0.34,
+  desktop: 0.64,
+  tablet: 0.52,
+  mobile: 0.38,
 }
 
 const VIEW_COPY: Record<WorkspaceView, { eyebrow: string; title: string; description: string }> = {
@@ -282,8 +282,8 @@ function PreviewPane({
     <section className={`workspace-stage min-h-0 flex-col overflow-hidden ${className}`}>
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-4 py-4 lg:px-5">
         <div>
-          <p className="shell-kicker">Reader view</p>
-          <h2 className="mt-1 text-[var(--font-size-h4)] font-semibold text-on-surface">Live dossier</h2>
+          <p className="shell-kicker">Reader preview</p>
+          <h2 className="mt-1 text-[var(--font-size-h4)] font-semibold text-on-surface">Live edition</h2>
         </div>
 
         <div className="flex items-center gap-4 border-l border-border/70 pl-4">

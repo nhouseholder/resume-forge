@@ -14,9 +14,9 @@ type Step = 'upload' | 'parsing' | 'editor' | 'error'
 function createBlankResume(): ResumeData {
   const meta = applyFieldDefaults(
     {
-      templateId: 'meridian',
-      palette: 'deep-navy',
-      fontPairing: 'editorial-classic',
+      templateId: 'archive',
+      palette: 'vellum-rose',
+      fontPairing: 'portfolio-editorial',
       layoutDensity: 'balanced',
       darkMode: false,
       sectionVisibility: {},
@@ -57,9 +57,9 @@ export default function BuilderPage() {
         const category = detectFieldCategory(result.data)
         const metaWithDefaults = applyFieldDefaults(
           result.data.meta ?? {
-            templateId: 'meridian',
-            palette: 'deep-navy',
-            fontPairing: 'editorial-classic',
+            templateId: 'archive',
+            palette: 'vellum-rose',
+            fontPairing: 'portfolio-editorial',
             layoutDensity: 'balanced',
             darkMode: false,
             sectionVisibility: {},

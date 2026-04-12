@@ -19,9 +19,9 @@ interface FieldDefaults {
 
 const FIELD_DEFAULTS: Record<FieldCategory, FieldDefaults> = {
   academic: {
-    templateId: 'meridian',
-    palette: 'deep-navy',
-    fontPairing: 'academic',
+    templateId: 'archive',
+    palette: 'vellum-rose',
+    fontPairing: 'portfolio-editorial',
     layoutDensity: 'balanced',
   },
   tech: {
@@ -31,9 +31,9 @@ const FIELD_DEFAULTS: Record<FieldCategory, FieldDefaults> = {
     layoutDensity: 'compact',
   },
   business: {
-    templateId: 'meridian',
-    palette: 'burgundy',
-    fontPairing: 'corporate',
+    templateId: 'archive',
+    palette: 'vellum-rose',
+    fontPairing: 'portfolio-editorial',
     layoutDensity: 'balanced',
   },
   creative: {
@@ -81,9 +81,9 @@ export function applyFieldDefaults(
  */
 export function getFieldDefaultsRationale(category: FieldCategory): string {
   const rationales: Record<FieldCategory, string> = {
-    academic: 'Academic resumes benefit from the Meridian template with classic typography and a balanced layout that accommodates publications and research.',
+    academic: 'Academic resumes benefit from the Archive template with warmer editorial hierarchy, publication-aware formatting, and typography that feels closer to a premium academic portfolio than a pasted CV.',
     tech: 'Tech resumes use the Signal template with a compact density to maximize content, paired with the Technical font pairing for a modern developer aesthetic.',
-    business: 'Business resumes lean into the Meridian template with a corporate palette and professional font pairing that conveys authority.',
+    business: 'Business resumes can still read sharper in the Archive template when the goal is a more premium, editorial presentation rather than a generic corporate sheet.',
     creative: 'Creative resumes use the Canvas template with a spacious layout and distinctive font pairing that showcases visual sensibility.',
   }
   return rationales[category]

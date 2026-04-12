@@ -13,6 +13,15 @@ export interface FontPairing {
 
 export const FONT_PAIRINGS: FontPairing[] = [
   {
+    id: 'portfolio-editorial',
+    name: 'Portfolio Editorial',
+    heading: 'Cormorant Garamond',
+    body: 'Source Sans 3',
+    headingWeight: 600,
+    bodyWeight: 400,
+    description: 'Academic portfolio tone - elegant serif headlines with a cleaner research-ready body text.',
+  },
+  {
     id: 'editorial-classic',
     name: 'Editorial Classic',
     heading: 'Newsreader',

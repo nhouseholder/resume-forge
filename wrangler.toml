@@ -1,4 +1,4 @@
-name = "resume-builder"
+name = "resume-forge"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "dist"
 

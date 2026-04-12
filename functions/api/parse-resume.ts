@@ -84,14 +84,6 @@ export function corsHeaders(request: Request, env: Env): Record<string, string> 
   }
 }
 
-interface ParseResponse {
-  ok: boolean
-  data?: InferredResumeData
-  error?: string
-  requestId?: string
-  retryAfter?: number
-}
-
 function jsonResponse(body: unknown, init: ResponseInit, request: Request, env: Env): Response {
   const headers = new Headers(init.headers)
   for (const [k, v] of Object.entries(corsHeaders(request, env))) {

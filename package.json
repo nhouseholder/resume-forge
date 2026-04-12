@@ -1,7 +1,7 @@
 {
   "name": "resume-builder",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name=resumeforge-app"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name=resume-forge"
   },
   "dependencies": {
     "idb-keyval": "^6.2.2",

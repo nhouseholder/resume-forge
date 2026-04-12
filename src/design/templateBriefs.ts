@@ -11,10 +11,18 @@ export interface TemplateBrief {
 
 export const TEMPLATE_BRIEFS: TemplateBrief[] = [
   {
+    id: 'archive',
+    name: 'Archive',
+    description: 'Academic Portfolio - Research-forward editorial hierarchy with stronger section rhythm, citation styling, and premium academic tone.',
+    targetFields: ['academic', 'business'],
+    enhancementVoice: 'Scholarly, high-signal, and institutionally credible. Favor measured authority, publication-aware framing, and narrative clarity over generic resume shorthand.',
+    focusAreas: ['publication-led positioning', 'academic and clinical credibility', 'clear narrative hierarchy'],
+  },
+  {
     id: 'meridian',
     name: 'Meridian',
-    description: 'Editorial Authority — Clean single-column layout with accent left-borders. Ideal for academic, business, and professional resumes.',
-    targetFields: ['academic', 'business'],
+    description: 'Editorial Authority - Clean single-column layout with restrained accents. Best when you want a calmer, more traditional professional document.',
+    targetFields: ['business'],
     enhancementVoice: 'Measured, credible, and polished. Favor clarity, authority, and institutional confidence over hype.',
     focusAreas: ['clear executive summary', 'evidence-led accomplishments', 'calm professional tone'],
   },

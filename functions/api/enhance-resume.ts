@@ -33,15 +33,6 @@ interface AIEnhancementResponse {
 const enhanceRateLimitStore = new Map<string, { count: number; windowStart: number }>()
 const DEFAULT_ENHANCE_MODEL = '@cf/qwen/qwen3-30b-a3b-fp8'
 
-interface EnhanceResponse {
-  ok: boolean
-  data?: typeof sanitizePatch extends (x: any) => infer R ? R : any
-  model?: string
-  error?: string
-  requestId?: string
-  retryAfter?: number
-}
-
 function jsonResponse(body: unknown, init: ResponseInit, request: Request, env: Env): Response {
   const headers = new Headers(init.headers)
   for (const [key, value] of Object.entries(corsHeaders(request, env))) {

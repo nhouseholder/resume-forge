@@ -24,9 +24,9 @@ const indexedDBStorage: StateStorage = {
 // ── Default meta ──
 
 const DEFAULT_META: ResumeMeta = {
-  templateId: 'meridian',
-  palette: 'deep-navy',
-  fontPairing: 'editorial-classic',
+  templateId: 'archive',
+  palette: 'vellum-rose',
+  fontPairing: 'portfolio-editorial',
   layoutDensity: 'balanced',
   darkMode: false,
   sectionVisibility: {
@@ -93,7 +93,7 @@ const initialState: ResumeState = {
   parseError: null,
   activeSection: 'basics',
   previewMode: 'desktop',
-  templateId: 'meridian',
+  templateId: 'archive',
   meta: DEFAULT_META,
   detectedField: null,
 };

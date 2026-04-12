@@ -37,7 +37,7 @@ const API_URL = '/api/enhance-resume'
 export const AIEnhanceButton = memo(function AIEnhanceButton() {
   const canEnhance = useResumeStore((state) => (state.resume ? hasEnhanceableContent(state.resume) : false))
   const templateId = useResumeStore((state) => state.meta.templateId)
-  const templateName = TEMPLATE_REGISTRY.find(t => t.id === templateId)?.name ?? 'Meridian'
+  const templateName = TEMPLATE_REGISTRY.find(t => t.id === templateId)?.name ?? 'Archive'
   const detectedField = useResumeStore((state) => state.detectedField)
   const workCount = useResumeStore((state) => state.resume?.work?.length ?? 0)
   const projectCount = useResumeStore((state) => state.resume?.projects?.length ?? 0)
