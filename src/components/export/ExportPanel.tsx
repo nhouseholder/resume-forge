@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { buildSharedResumeUrl } from '@/components/export/shareExporter'
 import { downloadPortfolioHtml, printPortfolioPdf } from '@/components/export/htmlExporter'
+import { AIPortfolioPolishButton } from '@/components/export/AIPortfolioPolishButton'
 import { useResumeStore } from '@/store/useResumeStore'
 
 /**
@@ -82,6 +83,8 @@ export function ExportPanel() {
           Turn the same resume data into a self-contained portfolio website. Download the HTML to open locally or deploy, or print a multi-page PDF version.
         </p>
       </div>
+
+      <AIPortfolioPolishButton />
 
       <div className="grid gap-4 md:grid-cols-2 mt-4">
         <DispatchCard
