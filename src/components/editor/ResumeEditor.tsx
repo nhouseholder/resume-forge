@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { useResumeStore } from '@/store/useResumeStore'
 import { AIEnhanceButton } from './AIEnhanceButton'
 import { SectionNav } from './SectionNav'
@@ -8,6 +8,7 @@ import { ListSectionEditor } from './sections/ListSectionEditor'
 import { SECTION_FIELDS, SECTION_BLANKS, SECTION_TITLES } from './sections/sectionConfig'
 import type { ResumeData } from '@/types/resume'
 import { TEMPLATE_REGISTRY } from '@/components/templates/templateConfig'
+import { buildPortfolioHtml } from '@/portfolio/buildPortfolioHtml'
 
 // Lazy-load heavy panels — only needed when user switches tabs
 const TemplateCustomizer = lazy(() =>
@@ -232,6 +233,7 @@ export function ResumeEditor() {
 
           <PreviewPane
             className="hidden lg:flex"
+            detectedField={detectedField}
             meta={meta}
             previewHeight={previewHeight}
             previewMode={previewMode}
@@ -244,6 +246,7 @@ export function ResumeEditor() {
           {view === 'publish' && (
             <PreviewPane
               className="flex lg:hidden"
+              detectedField={detectedField}
               meta={meta}
               previewHeight={previewHeight}
               previewMode={previewMode}
@@ -263,6 +266,7 @@ function PreviewPane({
   className,
   resume,
   meta,
+  detectedField,
   previewMode,
   setPreviewMode,
   previewScale,
@@ -272,12 +276,20 @@ function PreviewPane({
   className: string
   resume: ResumeData
   meta: ReturnType<typeof useResumeStore.getState>['meta']
+  detectedField: string | null
   previewMode: 'desktop' | 'tablet' | 'mobile'
   setPreviewMode: (mode: 'desktop' | 'tablet' | 'mobile') => void
   previewScale: number
   previewWidth: number
   previewHeight: number
 }) {
+  const [previewType, setPreviewType] = useState<'resume' | 'portfolio'>('resume')
+
+  const portfolioHtml = useMemo(
+    () => buildPortfolioHtml({ resume, meta, fieldCategory: (detectedField as import('@/types/resume').FieldCategory) ?? null }),
+    [resume, meta, detectedField]
+  )
+
   return (
     <section className={`workspace-stage min-h-0 flex-col overflow-hidden ${className}`}>
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-4 py-4 lg:px-5">
@@ -286,35 +298,65 @@ function PreviewPane({
           <h2 className="mt-1 text-[var(--font-size-h4)] font-semibold text-on-surface">Live edition</h2>
         </div>
 
-        <div className="flex items-center gap-4 border-l border-border/70 pl-4">
-          {(['desktop', 'tablet', 'mobile'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setPreviewMode(mode)}
-              className={`border-b-2 pb-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] transition-all duration-[var(--duration-fast)] ${previewMode === mode
-                ? 'border-primary-600 text-on-surface'
-                : 'border-transparent text-on-surface-muted hover:text-on-surface'
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-0.5 border border-border/60 rounded p-0.5">
+            {(['resume', 'portfolio'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setPreviewType(type)}
+                className={`px-3 py-1 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.12em] rounded transition-all duration-[var(--duration-fast)] ${
+                  previewType === type
+                    ? 'bg-primary-600 text-white'
+                    : 'text-on-surface-muted hover:text-on-surface'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {previewType === 'resume' && (
+            <div className="flex items-center gap-4 border-l border-border/70 pl-4">
+              {(['desktop', 'tablet', 'mobile'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setPreviewMode(mode)}
+                  className={`border-b-2 pb-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] transition-all duration-[var(--duration-fast)] ${previewMode === mode
+                    ? 'border-primary-600 text-on-surface'
+                    : 'border-transparent text-on-surface-muted hover:text-on-surface'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto p-4 lg:p-6">
-        <div className="mx-auto flex min-w-fit justify-center">
-          <div className="workspace-paper shrink-0" style={{ width: `${previewWidth}px`, minHeight: `${previewHeight}px` }}>
-            <div style={{ width: '816px', minHeight: '1056px', transform: `scale(${previewScale})`, transformOrigin: 'top left' }}>
-              <div data-resume-preview style={{ width: '816px', minHeight: '1056px' }}>
-                <Suspense fallback={<div className="flex h-[1056px] items-center justify-center"><div className="h-8 w-8 rounded-full border-[3px] border-neutral-200 border-t-primary-600 animate-spin" /></div>}>
-                  <TemplateRenderer data={resume} meta={meta} />
-                </Suspense>
+        {previewType === 'resume' ? (
+          <div className="mx-auto flex min-w-fit justify-center">
+            <div className="workspace-paper shrink-0" style={{ width: `${previewWidth}px`, minHeight: `${previewHeight}px` }}>
+              <div style={{ width: '816px', minHeight: '1056px', transform: `scale(${previewScale})`, transformOrigin: 'top left' }}>
+                <div data-resume-preview style={{ width: '816px', minHeight: '1056px' }}>
+                  <Suspense fallback={<div className="flex h-[1056px] items-center justify-center"><div className="h-8 w-8 rounded-full border-[3px] border-neutral-200 border-t-primary-600 animate-spin" /></div>}>
+                    <TemplateRenderer data={resume} meta={meta} />
+                  </Suspense>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <iframe
+            srcDoc={portfolioHtml}
+            title="Portfolio preview"
+            className="w-full h-full min-h-[600px] border-0 rounded"
+            sandbox="allow-same-origin"
+          />
+        )}
       </div>
     </section>
   )
