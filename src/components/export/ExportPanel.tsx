@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { buildSharedResumeUrl } from '@/components/export/shareExporter'
+import { downloadPortfolioHtml, printPortfolioPdf } from '@/components/export/htmlExporter'
 import { useResumeStore } from '@/store/useResumeStore'
 
 /**
@@ -9,6 +10,7 @@ import { useResumeStore } from '@/store/useResumeStore'
 export function ExportPanel() {
   const resume = useResumeStore((s) => s.resume)
   const meta = useResumeStore((s) => s.meta)
+  const detectedField = useResumeStore((s) => s.detectedField)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
 
   const exportPDF = useCallback(() => {
@@ -70,6 +72,39 @@ export function ExportPanel() {
           description="Use the browser print dialog to capture the same page as a print-ready PDF with the document styles preserved."
           actionLabel="Print to PDF"
           onAction={exportPDF}
+        />
+      </div>
+
+      <div className="editor-section-header mt-8">
+        <span className="shell-kicker">Portfolio studio</span>
+        <h2 className="text-[var(--font-size-h2)] text-on-surface">Generate a portfolio site</h2>
+        <p className="editor-note max-w-xl">
+          Turn the same resume data into a self-contained portfolio website. Download the HTML to open locally or deploy, or print a multi-page PDF version.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 mt-4">
+        <DispatchCard
+          eyebrow="Portfolio site"
+          title="Download portfolio HTML"
+          description="Self-contained website built from your resume. Opens in any browser, deployable to Cloudflare Pages, Vercel, or Netlify."
+          actionLabel="Download HTML"
+          onAction={() => {
+            if (!resume) return
+            downloadPortfolioHtml({ resume, meta, fieldCategory: detectedField })
+            setNotice({ kind: 'success', message: 'Portfolio HTML downloaded. Open the file in any browser.' })
+          }}
+          primary
+        />
+        <DispatchCard
+          eyebrow="Portfolio PDF"
+          title="Print portfolio as PDF"
+          description="Multi-page PDF matching the portfolio site layout. Each major section starts a new page."
+          actionLabel="Print portfolio"
+          onAction={() => {
+            if (!resume) return
+            printPortfolioPdf({ resume, meta, fieldCategory: detectedField })
+          }}
         />
       </div>
 

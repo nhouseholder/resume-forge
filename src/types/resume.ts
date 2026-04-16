@@ -100,6 +100,7 @@ export interface ResumeProject {
   name: string;
   description?: string;
   url?: string;
+  repoUrl?: string;
   tech?: string[];
   startDate?: string;
   endDate?: string;

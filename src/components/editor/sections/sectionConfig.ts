@@ -41,7 +41,9 @@ export const SECTION_FIELDS: Record<string, FieldDef[]> = {
   projects: [
     { key: 'name', label: 'Project Name', required: true },
     { key: 'description', label: 'Description', type: 'textarea' },
-    { key: 'url', label: 'URL', type: 'url' },
+    { key: 'url', label: 'Live URL', type: 'url', placeholder: 'https://myproject.com' },
+    { key: 'repoUrl', label: 'Repository URL', type: 'url', placeholder: 'https://github.com/...' },
+    { key: 'tech', label: 'Tech Stack', placeholder: 'React, TypeScript, Cloudflare' },
     { key: 'startDate', label: 'Start Date', type: 'date' },
     { key: 'endDate', label: 'End Date', type: 'date' },
   ],

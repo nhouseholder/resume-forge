@@ -84,6 +84,7 @@ const ResumeProjectSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   url: z.string().optional(),
+  repoUrl: z.string().optional(),
   tech: z.array(z.string()).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
