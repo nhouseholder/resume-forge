@@ -86,7 +86,7 @@ export default function TemplateRenderer({ data, meta }: TemplateRendererProps) 
 }
 
 function applySectionVisibility(data: ResumeData, meta: ResumeMeta): ResumeData {
-  const isVisible = (key: string) => meta.sectionVisibility[key] ?? true
+  const isVisible = (key: string) => meta.sectionVisibility?.[key] ?? true
 
   return {
     ...data,
@@ -94,20 +94,20 @@ function applySectionVisibility(data: ResumeData, meta: ResumeMeta): ResumeData 
       ...data.basics,
       summary: isVisible('summary') ? data.basics.summary : undefined,
     },
-    work: isVisible('work') ? data.work : [],
-    education: isVisible('education') ? data.education : [],
-    skills: isVisible('skills') ? data.skills : [],
-    publications: isVisible('publications') ? data.publications : [],
-    presentations: isVisible('presentations') ? data.presentations : [],
-    projects: isVisible('projects') ? data.projects : [],
-    researchThreads: isVisible('researchThreads') ? data.researchThreads : [],
-    leadership: isVisible('leadership') ? data.leadership : [],
-    volunteer: isVisible('volunteer') ? data.volunteer : [],
-    awards: isVisible('awards') ? data.awards : [],
-    interests: isVisible('interests') ? data.interests : [],
-    references: isVisible('references') ? data.references : [],
-    certifications: isVisible('certifications') ? data.certifications : [],
-    languages: isVisible('languages') ? data.languages : [],
+    work: isVisible('work') ? (data.work ?? []) : [],
+    education: isVisible('education') ? (data.education ?? []) : [],
+    skills: isVisible('skills') ? (data.skills ?? []) : [],
+    publications: isVisible('publications') ? (data.publications ?? []) : [],
+    presentations: isVisible('presentations') ? (data.presentations ?? []) : [],
+    projects: isVisible('projects') ? (data.projects ?? []) : [],
+    researchThreads: isVisible('researchThreads') ? (data.researchThreads ?? []) : [],
+    leadership: isVisible('leadership') ? (data.leadership ?? []) : [],
+    volunteer: isVisible('volunteer') ? (data.volunteer ?? []) : [],
+    awards: isVisible('awards') ? (data.awards ?? []) : [],
+    interests: isVisible('interests') ? (data.interests ?? []) : [],
+    references: isVisible('references') ? (data.references ?? []) : [],
+    certifications: isVisible('certifications') ? (data.certifications ?? []) : [],
+    languages: isVisible('languages') ? (data.languages ?? []) : [],
   }
 }
 

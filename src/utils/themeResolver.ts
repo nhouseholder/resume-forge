@@ -75,7 +75,7 @@ export interface ResolvedTheme {
 export function resolveTheme(meta: ResumeMeta): ResolvedTheme {
   const palette = PALETTES.find((p: Palette) => p.id === meta.palette) ?? PALETTES[0]
   const font = FONT_PAIRINGS.find((f: FontPairing) => f.id === meta.fontPairing) ?? FONT_PAIRINGS[0]
-  const density = DENSITY_SCALE[meta.layoutDensity]
+  const density = DENSITY_SCALE[meta.layoutDensity] ?? DENSITY_SCALE.balanced
   const shades = meta.darkMode ? DARK_SHADES : LIGHT_SHADES
 
   const props: Record<string, string> = {}
