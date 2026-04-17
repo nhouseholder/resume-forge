@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useResumeStore } from '@/store/useResumeStore'
 import { UploadZone } from '@/components/upload/UploadZone'
@@ -42,6 +42,11 @@ export default function BuilderPage() {
   const [step, setStep] = useState<Step>(resume ? 'editor' : 'upload')
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+
+  // IDB hydration is async — if resume loads after mount while still on 'upload', advance to editor.
+  useEffect(() => {
+    if (resume && step === 'upload') setStep('editor')
+  }, [resume, step])
 
   const handleFile = async (file: File) => {
     setFileName(file.name)
