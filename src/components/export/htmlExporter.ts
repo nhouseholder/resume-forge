@@ -28,14 +28,18 @@ export function downloadPortfolioHtml(opts: {
   URL.revokeObjectURL(url)
 }
 
+export type PrintPortfolioResult = { ok: true } | { ok: false; reason: 'popup-blocked' }
+
 /**
  * Open the portfolio in a new window for print-to-PDF.
+ * Returns `{ ok: false, reason: 'popup-blocked' }` when the browser suppresses window.open
+ * so the caller can surface an actionable message to the user.
  */
 export function printPortfolioPdf(opts: {
   resume: ResumeData
   meta: ResumeMeta
   fieldCategory: FieldCategory | null
-}): void {
+}): PrintPortfolioResult {
   const html = buildPortfolioHtml({
     resume: opts.resume,
     meta: opts.meta,
@@ -43,7 +47,7 @@ export function printPortfolioPdf(opts: {
   })
 
   const win = window.open('', '_blank')
-  if (!win) return
+  if (!win) return { ok: false, reason: 'popup-blocked' }
 
   win.document.write(html)
   win.document.close()
@@ -56,4 +60,6 @@ export function printPortfolioPdf(opts: {
   } else {
     setTimeout(() => win.print(), 800)
   }
+
+  return { ok: true }
 }

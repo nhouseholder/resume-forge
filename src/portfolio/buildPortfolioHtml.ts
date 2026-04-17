@@ -85,10 +85,12 @@ export function buildPortfolioHtml(opts: PortfolioHtmlOptions): string {
   const title = label ? `${name} | ${label}` : name
   const description = summary.slice(0, 160) || `${name}'s professional portfolio`
 
-  // Font links
-  const fontLinks = theme.fontUrls
-    .map((url) => `<link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="${url}" rel="stylesheet">`)
-    .join('\n  ')
+  // Font links — one preconnect pair for the whole document, then one stylesheet per URL.
+  const fontLinks = [
+    '<link rel="preconnect" href="https://fonts.googleapis.com">',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+    ...theme.fontUrls.map((url) => `<link href="${url}" rel="stylesheet">`),
+  ].join('\n  ')
 
   // Schema.org
   const schemaOrg = buildSchemaOrg(

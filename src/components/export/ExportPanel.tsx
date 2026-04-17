@@ -106,7 +106,10 @@ export function ExportPanel() {
           actionLabel="Print portfolio"
           onAction={() => {
             if (!resume) return
-            printPortfolioPdf({ resume, meta, fieldCategory: detectedField })
+            const result = printPortfolioPdf({ resume, meta, fieldCategory: detectedField })
+            if (!result.ok) {
+              setNotice({ kind: 'error', message: 'Popup blocked — allow popups for this site and retry.' })
+            }
           }}
         />
       </div>
